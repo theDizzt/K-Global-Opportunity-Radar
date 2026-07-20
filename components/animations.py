@@ -26,6 +26,10 @@ def apply_animation_variant():
         .model-row, .warning-tag, .source-card {{
             animation-name: fade-refresh-{variant};
         }}
+        .headline, .subline, [data-testid="stSelectbox"],
+        .st-key-compare_chart_panel .panel-title, [data-testid="stAlert"] {{
+            animation-name: page-refresh-{variant};
+        }}
         .metric-fill {{ animation-name: bar-refresh-{variant}; }}
         [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {{
             animation-name: chart-refresh-{variant};

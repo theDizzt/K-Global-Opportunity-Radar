@@ -17,7 +17,7 @@ from views.source_view import show_source_details
 
 def show_analysis_controls(data):
     title_column, country_column, field_column, persona_column = st.columns(
-        [2.7, 1, 1, 1.15],
+        [3.35, 1, 1, 1.15],
         vertical_alignment="bottom",
     )
 
@@ -57,7 +57,9 @@ def show_analysis_controls(data):
     row = data[data["country"] == country].iloc[0]
     with title_column:
         st.markdown(
-            f'<div class="headline">{country} {field} 분야 협력기회 분석</div>',
+            '<div class="headline">'
+            f'<span>{country}</span><span>{field} 분야</span><span>협력기회 분석</span>'
+            '</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -75,12 +77,12 @@ def show_analysis_page(data):
     main_column, side_column = st.columns([2.45, 1], gap="medium")
 
     with main_column:
-        with st.container(border=True):
+        with st.container(border=True, height=280, key="score_panel"):
             show_score_panel(row, field, score)
 
         chart_column, evidence_column = st.columns([1, 1], gap="medium")
         with chart_column:
-            with st.container(border=True):
+            with st.container(border=True, height=350, key="signal_panel"):
                 st.markdown(
                     '<div class="panel-title"><span class="panel-icon">⌁</span>최근 5년 협력 신호</div>',
                     unsafe_allow_html=True,
@@ -97,15 +99,15 @@ def show_analysis_page(data):
                 )
 
         with evidence_column:
-            with st.container(border=True):
+            with st.container(border=True, height=350, key="evidence_panel"):
                 show_evidence_panel(row)
 
     with side_column:
-        with st.container(border=True):
+        with st.container(border=True, height=168, key="ai_summary_panel"):
             show_ai_summary(row)
-        with st.container(border=True):
+        with st.container(border=True, height=312, key="model_panel"):
             show_model_panel(row)
-        with st.container(border=True):
+        with st.container(border=True, height=134, key="warning_panel"):
             show_warning_panel(row)
 
     st.markdown('<div class="action-row">', unsafe_allow_html=True)

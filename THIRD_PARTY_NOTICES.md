@@ -19,12 +19,13 @@
 
 `styles/dashboard.css`는 다음 폰트를 저장소에 포함하지 않고 jsDelivr CDN에서 실행 시점에 불러옵니다.
 
-### Pretendard Medium
+### Pretendard
 
 - 저작권: Pretendard 프로젝트 및 해당 라이선스 파일에 기재된 원저작자
 - 라이선스: SIL Open Font License 1.1
 - 공식 프로젝트와 라이선스: [orioncactus/pretendard](https://github.com/orioncactus/pretendard/blob/main/LICENSE)
 - 런타임 배포 미러: [projectnoonnu/pretendard](https://github.com/projectnoonnu/pretendard)
+- 사용 굵기: Thin(100), Regular(400), Medium(500), Bold(700), ExtraBold(800)
 
 ### Cafe24 PRO Slim Bold
 

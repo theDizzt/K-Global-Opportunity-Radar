@@ -27,7 +27,7 @@ def show_compare_page(data):
             on_change=restart_animations,
         )
 
-    with st.container(border=True):
+    with st.container(border=True, key="compare_chart_panel"):
         st.markdown(
             f'<div class="panel-title"><span class="panel-icon">▥</span>{field} 분야 기회점수</div>',
             unsafe_allow_html=True,

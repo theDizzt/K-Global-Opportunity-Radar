@@ -12,8 +12,15 @@
     font-display: swap;
 }
 
-html, body, [class*="css"], .stApp {
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+:root {
+    --app-font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+html, body, [class*="css"], .stApp,
+.stApp button, .stApp input, .stApp textarea, .stApp select, .stApp option,
+.stApp label, .stApp table, .stApp [data-baseweb],
+[data-baseweb="popover"], [data-baseweb="menu"], [role="tooltip"] {
+    font-family: var(--app-font-family);
 }
 .stApp { background: #f7f9fc; color: #0a2747; }
 .block-container { max-width: 1480px; padding: 1.25rem 2rem 2.5rem; }
@@ -31,10 +38,14 @@ header[data-testid="stHeader"] { background: transparent; }
     box-shadow: 0 5px 14px rgba(6, 70, 134, .18);
 }
 .headline {
-    font-size: clamp(2rem, 3vw, 3.25rem); line-height: 1.15;
+    display: flex; flex-wrap: wrap; align-content: flex-end;
+    column-gap: .28em; min-height: 2.3em;
+    font-size: clamp(1.9rem, 2.55vw, 3.05rem); line-height: 1.15;
     letter-spacing: -.045em; font-weight: 800; color: #082a50;
     margin: .5rem 0 .55rem;
+    word-break: keep-all; overflow-wrap: normal;
 }
+.headline > span { white-space: nowrap; }
 .subline { color: #50647a; font-size: .98rem; margin-bottom: .6rem; }
 .subline strong { color: #0451b7; }
 .control-label { color: #597087; font-size: .75rem; font-weight: 700; margin-bottom: -.35rem; }
@@ -61,7 +72,7 @@ div[data-testid="stRadio"] label {
 .panel-icon { color: #0b58af; font-size: 1.18rem; }
 .score-label { font-weight: 800; color: #092b4f; font-size: 1.15rem; }
 .score-number {
-    font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif;
+    font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif !important;
     font-size: 3.9rem; line-height: 1; color: #073b76; font-weight: 800;
     letter-spacing: -.05em; margin: .65rem 0 .7rem;
     animation: score-refresh-a .38s cubic-bezier(.2, .75, .25, 1) both;
@@ -96,7 +107,7 @@ div[data-testid="stRadio"] label {
 .metric-fill.teal { background: #079e9d; }
 .metric-fill.blue { background: #0c5bb6; }
 .metric-value {
-    font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif;
+    font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif !important;
     font-weight: 300; color: #0757b0; font-size: 1.35rem; text-align: right;
 }
 
@@ -149,6 +160,9 @@ div[data-testid="stRadio"] label {
 }
 .source-card a { color: #0754aa; font-weight: 800; text-decoration: none; }
 .source-card p { color: #607488; font-size: .82rem; line-height: 1.55; }
+.st-key-source_cards [data-testid="stColumn"]:nth-child(2) .source-card { animation-delay: .06s; }
+.st-key-source_cards [data-testid="stColumn"]:nth-child(3) .source-card { animation-delay: .12s; }
+.st-key-source_cards [data-testid="stColumn"]:nth-child(4) .source-card { animation-delay: .18s; }
 
 .action-row div[data-testid="stButton"] button,
 .action-row div[data-testid="stDownloadButton"] button {
@@ -160,6 +174,18 @@ div[data-testid="stRadio"] label {
 
 [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
     animation: chart-refresh-a .45s cubic-bezier(.2, .75, .25, 1) both;
+    will-change: opacity, transform, filter;
+}
+
+.score-number, .score-level, .metric-item, .metric-fill, .ai-card,
+.evidence-row, .model-row, .warning-tag, .source-card {
+    will-change: opacity, transform;
+}
+
+.headline, .subline, [data-testid="stSelectbox"],
+.st-key-compare_chart_panel .panel-title, [data-testid="stAlert"] {
+    animation: page-refresh-a .38s cubic-bezier(.2, .75, .25, 1) both;
+    will-change: opacity, transform;
 }
 
 @keyframes score-refresh-a {
@@ -202,9 +228,21 @@ div[data-testid="stRadio"] label {
     to { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
 
+@keyframes page-refresh-a {
+    from { opacity: .25; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes page-refresh-b {
+    from { opacity: .25; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .score-number, .score-level, .metric-item, .metric-fill, .ai-card,
     .evidence-row, .model-row, .warning-tag, .source-card,
+    .headline, .subline, [data-testid="stSelectbox"],
+    .st-key-compare_chart_panel .panel-title, [data-testid="stAlert"],
     [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
         animation: none !important;
         transition: none !important;
@@ -213,6 +251,7 @@ div[data-testid="stRadio"] label {
 
 @media (max-width: 900px) {
     .block-container { padding-left: 1rem; padding-right: 1rem; }
+    .headline { min-height: auto; font-size: clamp(1.75rem, 7vw, 2.35rem); }
     .metric-item { grid-template-columns: 32px 105px 1fr 36px; }
     .score-number { font-size: 3rem; }
 }
