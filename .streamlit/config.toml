@@ -1,0 +1,44 @@
+[theme]
+primaryColor = "#2ED6A1"
+backgroundColor = "#F5F8FC"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#10243E"
+font = "Pretendard, sans-serif"
+headingFont = "Pretendard, sans-serif"
+codeFont = "Pretendard, monospace"
+
+[[theme.fontFaces]]
+family = "Pretendard"
+url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2"
+weight = "100"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Pretendard"
+url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2"
+weight = "400"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Pretendard"
+url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2"
+weight = "500"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Pretendard"
+url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2"
+weight = "700"
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Pretendard"
+url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2"
+weight = "800"
+style = "normal"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
