@@ -1,0 +1,60 @@
+{
+  "as_of_date": "2026-07-16",
+  "countries": [
+    {"iso3": "VNM", "iso2": "VN", "name_ko": "베트남", "name_en": "Vietnam", "region_code": "SEA"},
+    {"iso3": "IDN", "iso2": "ID", "name_ko": "인도네시아", "name_en": "Indonesia", "region_code": "SEA"},
+    {"iso3": "MNG", "iso2": "MN", "name_ko": "몽골", "name_en": "Mongolia", "region_code": "NEA"}
+  ],
+  "projects": [
+    {"external_id": "K-VN-EDU-01", "country_iso3": "VNM", "sector_code": "education", "name": "디지털 기반 교사역량 강화", "start_year": 2024, "end_year": 2027, "budget": 12500000, "status": "진행", "agency": "베트남 교육훈련부"},
+    {"external_id": "K-VN-EDU-02", "country_iso3": "VNM", "sector_code": "education", "name": "중부지역 스마트 교육환경 구축", "start_year": 2022, "end_year": 2025, "budget": 8200000, "status": "완료", "agency": "다낭시 교육국"},
+    {"external_id": "K-VN-VOC-01", "country_iso3": "VNM", "sector_code": "vocational", "name": "산업기술 직업훈련 역량강화", "start_year": 2023, "end_year": 2026, "budget": 9100000, "status": "진행", "agency": "노동보훈사회부"},
+    {"external_id": "K-VN-HEA-01", "country_iso3": "VNM", "sector_code": "health", "name": "지역 보건의료 정보체계 강화", "start_year": 2021, "end_year": 2025, "budget": 7300000, "status": "완료", "agency": "보건부"},
+    {"external_id": "K-VN-CLI-01", "country_iso3": "VNM", "sector_code": "climate_agri", "name": "메콩델타 기후회복력 농업", "start_year": 2025, "end_year": 2028, "budget": 11000000, "status": "진행", "agency": "농업환경부"},
+    {"external_id": "K-ID-EDU-01", "country_iso3": "IDN", "sector_code": "education", "name": "도서지역 디지털교육 접근성 개선", "start_year": 2025, "end_year": 2028, "budget": 15000000, "status": "진행", "agency": "초중등교육부"},
+    {"external_id": "K-ID-EDU-02", "country_iso3": "IDN", "sector_code": "education", "name": "교원 원격연수 플랫폼 구축", "start_year": 2024, "end_year": 2027, "budget": 10500000, "status": "진행", "agency": "고등교육과학기술부"},
+    {"external_id": "K-ID-EDU-03", "country_iso3": "IDN", "sector_code": "education", "name": "취약지역 학교 디지털 전환", "start_year": 2023, "end_year": 2026, "budget": 9300000, "status": "진행", "agency": "초중등교육부"},
+    {"external_id": "K-ID-VOC-01", "country_iso3": "IDN", "sector_code": "vocational", "name": "청년 디지털 직업훈련", "start_year": 2024, "end_year": 2027, "budget": 12800000, "status": "진행", "agency": "인력부"},
+    {"external_id": "K-ID-HEA-01", "country_iso3": "IDN", "sector_code": "health", "name": "원격의료 시범체계 구축", "start_year": 2025, "end_year": 2028, "budget": 14000000, "status": "진행", "agency": "보건부"},
+    {"external_id": "K-ID-HEA-02", "country_iso3": "IDN", "sector_code": "health", "name": "감염병 진단역량 강화", "start_year": 2022, "end_year": 2025, "budget": 7600000, "status": "완료", "agency": "보건부"},
+    {"external_id": "K-ID-CLI-01", "country_iso3": "IDN", "sector_code": "climate_agri", "name": "산림복원 및 기후대응 역량강화", "start_year": 2023, "end_year": 2027, "budget": 13500000, "status": "진행", "agency": "환경산림부"},
+    {"external_id": "K-MN-EDU-01", "country_iso3": "MNG", "sector_code": "education", "name": "농촌학교 ICT 교육환경 개선", "start_year": 2023, "end_year": 2026, "budget": 6500000, "status": "진행", "agency": "교육부"},
+    {"external_id": "K-MN-VOC-01", "country_iso3": "MNG", "sector_code": "vocational", "name": "광업안전 직업훈련센터 강화", "start_year": 2024, "end_year": 2027, "budget": 7800000, "status": "진행", "agency": "노동사회보장부"},
+    {"external_id": "K-MN-VOC-02", "country_iso3": "MNG", "sector_code": "vocational", "name": "청년 취창업 기술교육", "start_year": 2021, "end_year": 2025, "budget": 5200000, "status": "완료", "agency": "노동사회보장부"},
+    {"external_id": "K-MN-HEA-01", "country_iso3": "MNG", "sector_code": "health", "name": "울란바토르 응급의료 역량강화", "start_year": 2022, "end_year": 2026, "budget": 8800000, "status": "진행", "agency": "보건부"},
+    {"external_id": "K-MN-CLI-01", "country_iso3": "MNG", "sector_code": "climate_agri", "name": "대기오염 측정 및 환경관리", "start_year": 2024, "end_year": 2027, "budget": 9000000, "status": "진행", "agency": "환경기후변화부"}
+  ],
+  "diplomatic_events": [
+    {"source": "LOD", "external_id": "LOD-VN-E-01", "country_iso3": "VNM", "sector_code": "education", "title": "한-베트남 디지털교육 협력 논의", "event_type": "high_level_meeting", "event_date": "2026-02-18", "organizations": ["대한민국 외교부", "베트남 교육훈련부"], "confidence": 0.95, "supporting_text": "양측은 디지털 교육과 교원 역량강화 협력 방안을 논의했다.", "source_url": "https://opendata.mofa.go.kr/"},
+    {"source": "MOFA", "external_id": "MOFA-VN-E-01", "country_iso3": "VNM", "sector_code": "education", "title": "공관 교육협력 세미나", "event_type": "embassy_activity", "event_date": "2025-11-03", "organizations": ["주베트남대한민국대사관", "베트남 교육훈련부"], "confidence": 0.90, "supporting_text": "공관은 현지 교육기관과 디지털 교육 협력 세미나를 개최했다.", "source_url": "https://insight.mofa.go.kr/"},
+    {"source": "LOD", "external_id": "LOD-ID-E-01", "country_iso3": "IDN", "sector_code": "education", "title": "한-인도네시아 디지털 인재 협력 공동성명", "event_type": "agreement", "event_date": "2026-04-12", "organizations": ["대한민국 외교부", "인도네시아 교육부"], "confidence": 0.96, "supporting_text": "양국은 디지털 인재양성과 교육기술 협력을 확대하기로 했다.", "source_url": "https://opendata.mofa.go.kr/"},
+    {"source": "MOFA", "external_id": "MOFA-ID-E-01", "country_iso3": "IDN", "sector_code": "education", "title": "공관 에듀테크 간담회", "event_type": "joint_project", "event_date": "2026-05-10", "organizations": ["주인도네시아대한민국대사관", "인도네시아 교육부", "현지 대학"], "confidence": 0.92, "supporting_text": "공관과 현지 교육기관은 에듀테크 시범협력 과제를 검토했다.", "source_url": "https://insight.mofa.go.kr/"},
+    {"source": "LOD", "external_id": "LOD-MN-E-01", "country_iso3": "MNG", "sector_code": "education", "title": "한-몽 교육 협력 면담", "event_type": "high_level_meeting", "event_date": "2025-08-22", "organizations": ["대한민국 외교부", "몽골 교육부"], "confidence": 0.94, "supporting_text": "양측은 농촌 교육환경 개선과 교원 교류를 논의했다.", "source_url": "https://opendata.mofa.go.kr/"},
+    {"source": "MOFA", "external_id": "MOFA-MN-E-01", "country_iso3": "MNG", "sector_code": "education", "title": "한국 교육 콘텐츠 소개 행사", "event_type": "embassy_activity", "event_date": "2025-06-17", "organizations": ["주몽골대한민국대사관"], "confidence": 0.88, "supporting_text": "공관은 한국 교육 콘텐츠와 교류사업을 소개했다.", "source_url": "https://insight.mofa.go.kr/"},
+    {"source": "LOD", "external_id": "LOD-ID-H-01", "country_iso3": "IDN", "sector_code": "health", "title": "보건의료 협력회의", "event_type": "joint_project", "event_date": "2026-01-14", "organizations": ["대한민국 보건복지부", "인도네시아 보건부"], "confidence": 0.93, "supporting_text": "양측은 디지털 헬스와 감염병 대응 협력사업을 협의했다.", "source_url": "https://opendata.mofa.go.kr/"},
+    {"source": "MOFA", "external_id": "MOFA-VN-C-01", "country_iso3": "VNM", "sector_code": "korean_culture", "title": "한국문화 교류주간", "event_type": "embassy_activity", "event_date": "2026-03-20", "organizations": ["주베트남대한민국대사관", "현지 문화기관"], "confidence": 0.91, "supporting_text": "한국문화 교류 프로그램과 대학 간 교류행사가 개최됐다.", "source_url": "https://insight.mofa.go.kr/"},
+    {"source": "LOD", "external_id": "LOD-MN-V-01", "country_iso3": "MNG", "sector_code": "vocational", "title": "직업교육 협력 약정", "event_type": "agreement", "event_date": "2025-12-02", "organizations": ["대한민국 고용노동부", "몽골 노동사회보장부"], "confidence": 0.95, "supporting_text": "양국은 직업교육 교류와 훈련기관 역량강화를 추진하기로 했다.", "source_url": "https://opendata.mofa.go.kr/"},
+    {"source": "LOD", "external_id": "LOD-ID-CL-01", "country_iso3": "IDN", "sector_code": "climate_agri", "title": "산림·기후 협력 공동사업", "event_type": "joint_project", "event_date": "2025-10-08", "organizations": ["대한민국 산림청", "인도네시아 환경산림부"], "confidence": 0.94, "supporting_text": "양측은 산림복원과 탄소감축 공동사업을 논의했다.", "source_url": "https://opendata.mofa.go.kr/"}
+  ],
+  "academic_programs": [
+    {"external_id": "KF-A-VN-01", "country_iso3": "VNM", "university_name": "베트남국립대", "bachelor": 1, "master": 1, "doctorate": 0, "language_course": 1, "research_center": 1, "sejong_institute": 0, "korea_corner": 1, "reference_date": "2026-05-19"},
+    {"external_id": "KF-A-VN-02", "country_iso3": "VNM", "university_name": "하노이대", "bachelor": 1, "master": 0, "doctorate": 0, "language_course": 1, "research_center": 0, "sejong_institute": 1, "korea_corner": 0, "reference_date": "2026-05-19"},
+    {"external_id": "KF-A-ID-01", "country_iso3": "IDN", "university_name": "인도네시아대", "bachelor": 1, "master": 0, "doctorate": 0, "language_course": 1, "research_center": 1, "sejong_institute": 0, "korea_corner": 1, "reference_date": "2026-05-19"},
+    {"external_id": "KF-A-ID-02", "country_iso3": "IDN", "university_name": "가자마다대", "bachelor": 0, "master": 0, "doctorate": 0, "language_course": 1, "research_center": 0, "sejong_institute": 1, "korea_corner": 1, "reference_date": "2026-05-19"},
+    {"external_id": "KF-A-MN-01", "country_iso3": "MNG", "university_name": "몽골국립대", "bachelor": 1, "master": 1, "doctorate": 1, "language_course": 1, "research_center": 1, "sejong_institute": 1, "korea_corner": 1, "reference_date": "2026-05-19"},
+    {"external_id": "KF-A-MN-02", "country_iso3": "MNG", "university_name": "몽골인문대", "bachelor": 1, "master": 0, "doctorate": 0, "language_course": 1, "research_center": 0, "sejong_institute": 1, "korea_corner": 0, "reference_date": "2026-05-19"}
+  ],
+  "hallyu_stats": [
+    {"country_iso3": "VNM", "year": 2022, "club_count": 31, "member_count": 920000},
+    {"country_iso3": "VNM", "year": 2023, "club_count": 38, "member_count": 1180000},
+    {"country_iso3": "IDN", "year": 2022, "club_count": 45, "member_count": 1450000},
+    {"country_iso3": "IDN", "year": 2023, "club_count": 54, "member_count": 1900000},
+    {"country_iso3": "MNG", "year": 2022, "club_count": 18, "member_count": 210000},
+    {"country_iso3": "MNG", "year": 2023, "club_count": 22, "member_count": 270000}
+  ],
+  "safety_notices": [
+    {"external_id": "SAFE-VN-01", "country_iso3": "VNM", "warning_level": 1, "published_at": "2026-06-01", "title": "일반 안전 유의", "source_url": "https://insight.mofa.go.kr/"},
+    {"external_id": "SAFE-ID-01", "country_iso3": "IDN", "warning_level": 2, "published_at": "2026-06-15", "title": "일부 지역 여행자제", "source_url": "https://insight.mofa.go.kr/"},
+    {"external_id": "SAFE-MN-01", "country_iso3": "MNG", "warning_level": 1, "published_at": "2026-05-20", "title": "일반 안전 유의", "source_url": "https://insight.mofa.go.kr/"}
+  ]
+}

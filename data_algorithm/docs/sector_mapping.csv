@@ -1,0 +1,9 @@
+sector_code,name_ko,legacy_code,scope_note
+education,교육,,학교·교원·교육과정·교육정책·이러닝
+digital,디지털·ICT,,ICT·AI·데이터·전자정부·스마트시티·사이버
+health,보건·의료,,보건의료·병원·감염병·원격의료·의약
+agriculture,농업·농촌,climate_agri,농업·농촌·식량·축산·관개·스마트팜
+climate_environment,기후·환경,climate_agri,기후·환경·산림·탄소·수자원·재생에너지
+vocational,직업훈련·인력양성,,TVET·기술교육·취업·취창업·역량강화
+korean_studies,한국어·한국학,korean_culture,한국어·한국학·세종학당·한국연구·코리아코너
+culture_content,문화·콘텐츠,korean_culture,한류·문화·예술·공연·영화·방송·웹툰·게임
