@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -10,20 +11,24 @@ from backend.services.analysis_service import build_analysis
 from config.settings import API_BASE_URL, API_FALLBACK_ENABLED, API_TIMEOUT
 
 
+# 1. 프론트엔드가 사용한 데이터 전달 경로 구분
 Transport = Literal["api", "sqlite_fallback"]
 
 
 class ApiClientError(RuntimeError):
-    """Raised when neither the API nor the configured fallback is available."""
+    """API와 설정된 안전 모드를 모두 사용할 수 없을 때 발생하는 오류입니다."""
 
 
+# 2. API 응답 데이터와 실제 전달 경로를 함께 보관
 @dataclass(frozen=True)
 class GatewayResult:
     payload: Any
     transport: Transport
 
 
+# 3. Streamlit과 FastAPI 사이의 데이터 요청 처리
 class RadarGateway:
+    # 3.1. API 주소, 제한 시간, SQLite 안전 모드 설정
     def __init__(
         self,
         base_url: str = API_BASE_URL,
@@ -34,15 +39,19 @@ class RadarGateway:
         self.timeout = timeout
         self.fallback_enabled = fallback_enabled
 
+    # 3.2. 화면 선택 항목 조회
     def get_options(self):
         return self._request("GET", "/options", self._fallback_options)
 
+    # 3.3. 국가 목록 조회
     def get_countries(self):
         return self._request("GET", "/countries", self._fallback_countries)
 
+    # 3.4. 공공데이터 출처 목록 조회
     def get_sources(self):
         return self._request("GET", "/sources", self._fallback_sources)
 
+    # 3.5. 국가·사용자·분야별 분석 요청
     def analyze(self, country_iso3: str, persona: str, field: str, capabilities=None):
         body = {
             "country_iso3": country_iso3,
@@ -57,6 +66,7 @@ class RadarGateway:
             json=body,
         )
 
+    # 3.6. HTTP 요청 실행 및 실패 시 SQLite 안전 모드 전환
     def _request(self, method: str, path: str, fallback, **kwargs):
         try:
             with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
@@ -68,6 +78,7 @@ class RadarGateway:
                 return GatewayResult(fallback(), "sqlite_fallback")
             raise ApiClientError(f"Backend API request failed: {method} {path}") from error
 
+    # 4. API 장애 시 SQLite 저장소에서 동일한 응답 생성
     @staticmethod
     def _fallback_options():
         from backend.models.analysis import AnalysisField, Persona
@@ -99,4 +110,5 @@ class RadarGateway:
         return build_analysis(country, request).model_dump(mode="json")
 
 
+# 5. 화면 전역에서 재사용하는 API 게이트웨이 인스턴스
 radar_gateway = RadarGateway()

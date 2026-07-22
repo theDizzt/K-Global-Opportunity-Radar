@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 from io import BytesIO
 from xml.sax.saxutils import escape
 
@@ -11,12 +12,15 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
+# 1. 분석 API 응답으로 한글 PDF 전략 검토안 생성
 def make_report_pdf(result):
+    # 1.1. 보고서에 반복해서 사용하는 분석 항목 분리
     country = result["country"]
     analysis = result["analysis"]
     status = result["data_status"]
     risks = result["risks"]
 
+    # 1.2. PDF 문서와 한글 글꼴 설정
     buffer = BytesIO()
     pdfmetrics.registerFont(UnicodeCIDFont("HYSMyeongJo-Medium"))
     document = SimpleDocTemplate(
@@ -28,6 +32,7 @@ def make_report_pdf(result):
         bottomMargin=15 * mm,
     )
 
+    # 1.3. 제목, 소제목, 본문 스타일 설정
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         "KTitle",
@@ -57,6 +62,7 @@ def make_report_pdf(result):
         textColor=colors.HexColor("#273B4D"),
     )
 
+    # 1.4. 표와 본문에 들어갈 보고서 내용 구성
     risk_level = risks[0]["level"] if risks else "확인 필요"
     story = [
         Paragraph("K-Global Opportunity Radar", title_style),
@@ -104,5 +110,6 @@ def make_report_pdf(result):
         Paragraph("DEMO - 추가 확인과 내부 논의를 위한 초기 초안", body_style),
     ]
 
+    # 1.5. 문서를 메모리에서 생성하여 다운로드용 바이트 반환
     document.build(story)
     return buffer.getvalue()

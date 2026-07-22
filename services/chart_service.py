@@ -1,6 +1,8 @@
+# 0. 모듈 불러오기
 import plotly.graph_objects as go
 
 
+# 1. 협력기회 종합점수 도넛 게이지 생성
 def make_gauge_chart(score):
     chart = go.Figure(
         go.Pie(
@@ -33,6 +35,7 @@ def make_gauge_chart(score):
     return chart
 
 
+# 2. 최근 연도별 협력 신호 추세 차트 생성
 def make_signal_chart(trend):
     years = [point["year"] for point in trend]
     values = [point["score"] for point in trend]
@@ -65,6 +68,7 @@ def make_signal_chart(trend):
     return chart
 
 
+# 3. 국가별 기회점수 가로 막대 차트 생성
 def make_compare_chart(compare_data):
     compare_data = compare_data.sort_values("score")
 

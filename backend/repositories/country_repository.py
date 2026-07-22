@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 import json
 from dataclasses import dataclass
 from datetime import date
@@ -8,6 +9,7 @@ from backend.models.country import CountryDetail, CountrySummary, IndicatorValue
 from config.settings import DATABASE_PATH
 
 
+# 1. 데이터베이스 조회 결과를 보관하는 국가 레코드
 @dataclass(frozen=True)
 class CountryRecord:
     iso3: str
@@ -28,6 +30,7 @@ class CountryRecord:
     gap_opportunity: str
     summary: str
 
+    # 1.1. 국가 목록 API용 요약 모델로 변환
     def to_summary(self):
         return CountrySummary(
             iso3=self.iso3,
@@ -39,6 +42,7 @@ class CountryRecord:
             reference_date=self.updated,
         )
 
+    # 1.2. 국가 상세 API용 지표 포함 모델로 변환
     def to_detail(self):
         return CountryDetail(
             **self.to_summary().model_dump(),
@@ -57,11 +61,14 @@ class CountryRecord:
         )
 
 
+# 2. 국가정보 조회를 담당하는 저장소
 class CountryRepository:
+    # 2.1. 데이터베이스 준비 및 경로 설정
     def __init__(self, database_path=DATABASE_PATH):
         self.database_path = database_path
         initialize_database(self.database_path)
 
+    # 2.2. 전체 국가 또는 권역별 국가 목록 조회
     def list_all(self, region: str | None = None):
         query = _COUNTRY_QUERY
         parameters = ()
@@ -74,16 +81,19 @@ class CountryRepository:
             rows = connection.execute(query, parameters).fetchall()
         return [self._to_record(row) for row in rows]
 
+    # 2.3. ISO3 코드로 단일 국가 조회
     def get_by_iso3(self, iso3: str):
         query = _COUNTRY_QUERY + " WHERE c.iso3 = ? GROUP BY c.iso3"
         with get_connection(self.database_path) as connection:
             row = connection.execute(query, (iso3.strip().upper(),)).fetchone()
         return self._to_record(row) if row else None
 
+    # 2.4. 저장된 국가 수 조회
     def count(self):
         with get_connection(self.database_path) as connection:
             return connection.execute("SELECT COUNT(*) FROM countries").fetchone()[0]
 
+    # 2.5. SQLite 행을 CountryRecord 객체로 변환
     @staticmethod
     def _to_record(row):
         return CountryRecord(
@@ -107,6 +117,7 @@ class CountryRepository:
         )
 
 
+# 3. 국가 기본정보와 세부지표를 결합하는 공통 조회문
 _COUNTRY_QUERY = """
     SELECT
         c.*,
@@ -120,4 +131,5 @@ _COUNTRY_QUERY = """
 """
 
 
+# 4. API 전역에서 재사용하는 국가 저장소 인스턴스
 country_repository = CountryRepository()

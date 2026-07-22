@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 from html import escape
 
 import streamlit as st
@@ -5,6 +6,7 @@ import streamlit as st
 from services.data_service import load_sources
 
 
+# 1. 공공데이터 제공기관과 원문 확인 경로 표시
 def show_source_details(sources=None):
     if sources is None:
         sources, _ = load_sources()

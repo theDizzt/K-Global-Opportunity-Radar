@@ -1,3 +1,4 @@
+# 0. 테스트 모듈 불러오기
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,15 +9,19 @@ from backend.repositories.analysis_repository import AnalysisRepository
 from backend.repositories.country_repository import CountryRepository
 
 
+# 1. SQLite 스키마, 초기 데이터, 저장소 동작 검증
 class DatabaseTestCase(unittest.TestCase):
+    # 1.1. 각 테스트가 독립적으로 사용할 임시 데이터베이스 생성
     def setUp(self):
         self.temp_directory = tempfile.TemporaryDirectory()
         self.database_path = Path(self.temp_directory.name) / "test.db"
         initialize_database(self.database_path, reset=True)
 
+    # 1.2. 테스트 종료 후 임시 데이터 정리
     def tearDown(self):
         self.temp_directory.cleanup()
 
+    # 1.3. 테이블별 시범 데이터 적재 개수 검증
     def test_schema_and_seed_counts(self):
         with get_connection(self.database_path) as connection:
             counts = {
@@ -42,11 +47,13 @@ class DatabaseTestCase(unittest.TestCase):
         self.assertEqual(counts["data_sources"], 4)
         self.assertEqual(counts["collection_logs"], 4)
 
+    # 1.4. 데이터베이스 초기화를 반복해도 중복되지 않는지 검증
     def test_initialization_is_idempotent(self):
         initialize_database(self.database_path)
         repository = CountryRepository(self.database_path)
         self.assertEqual(repository.count(), 3)
 
+    # 1.5. 국가와 분석 저장소의 정규화된 조회 결과 검증
     def test_repositories_read_normalized_data(self):
         countries = CountryRepository(self.database_path)
         analysis = AnalysisRepository(self.database_path)
@@ -60,5 +67,6 @@ class DatabaseTestCase(unittest.TestCase):
         self.assertEqual(len(analysis.get_risks("VNM")), 2)
 
 
+# 2. 파일을 직접 실행했을 때 테스트 시작
 if __name__ == "__main__":
     unittest.main()

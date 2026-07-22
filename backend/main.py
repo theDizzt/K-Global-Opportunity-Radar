@@ -1,10 +1,12 @@
-"""FastAPI application entry point."""
+"""K-Global Opportunity Radar의 FastAPI 실행 진입점."""
 
+# 0. 모듈 불러오기
 from fastapi import FastAPI
 
 from backend.api.router import api_router
 
 
+# 1. FastAPI 애플리케이션 정보와 API 라우터 등록
 app = FastAPI(
     title="K-Global Opportunity Radar API",
     version="0.1.0",
@@ -16,6 +18,7 @@ app = FastAPI(
 app.include_router(api_router, prefix="/api/v1")
 
 
+# 2. 기본 접속 경로에서 문서와 상태 확인 주소 안내
 @app.get("/", include_in_schema=False)
 def read_root():
     return {

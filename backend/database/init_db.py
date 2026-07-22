@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 import argparse
 import csv
 import json
@@ -14,6 +15,7 @@ from config.constants import (
 from config.settings import DATABASE_PATH, DATA_PATH
 
 
+# 1. 스키마 위치, 평가지표 코드, 데이터 출처 초기값
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 INDICATOR_CODES = ("diplomacy", "oda", "korean_base", "people_exchange", "esg")
 SOURCE_SEEDS = {
@@ -24,6 +26,7 @@ SOURCE_SEEDS = {
 }
 
 
+# 2. 데이터베이스 스키마 생성 및 시범 데이터 초기 적재
 def initialize_database(database_path=DATABASE_PATH, reset=False):
     with get_connection(database_path) as connection:
         connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -37,6 +40,7 @@ def initialize_database(database_path=DATABASE_PATH, reset=False):
     return Path(database_path)
 
 
+# 3. 재설정 시 외래키 순서를 고려하여 기존 시범 데이터 삭제
 def _clear_seed_data(connection):
     for table in (
         "collection_logs",
@@ -52,6 +56,7 @@ def _clear_seed_data(connection):
         connection.execute(f"DELETE FROM {table}")
 
 
+# 4. CSV 국가정보와 설정 상수를 SQLite에 적재
 def _seed_database(connection):
     _seed_sources(connection)
 
@@ -106,6 +111,7 @@ def _seed_database(connection):
     )
 
 
+# 4.1. 공공데이터 제공기관 정보 적재
 def _seed_sources(connection):
     connection.executemany(
         "INSERT INTO data_sources (code, name, url, description) VALUES (?, ?, ?, ?)",
@@ -116,6 +122,7 @@ def _seed_sources(connection):
     )
 
 
+# 4.2. 국가별 프로젝트, 추천, 근거, 주의 요인 적재
 def _seed_country_analysis(connection, row):
     iso3 = row["iso3"]
     project = PROJECTS[iso3]
@@ -153,6 +160,7 @@ def _seed_country_analysis(connection, row):
     )
 
 
+# 5. 명령행에서 데이터베이스를 초기화하는 실행 함수
 def main():
     parser = argparse.ArgumentParser(description="Initialize the SQLite demo database.")
     parser.add_argument("--reset", action="store_true", help="Delete and reload seed data.")
@@ -162,5 +170,6 @@ def main():
     print(f"SQLite database ready: {database_path.resolve()}")
 
 
+# 6. 파일을 직접 실행했을 때 초기화 명령 시작
 if __name__ == "__main__":
     main()

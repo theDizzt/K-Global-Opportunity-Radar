@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 import streamlit as st
 
 from components.animations import restart_animations
@@ -14,6 +15,7 @@ from services.pdf_service import make_report_pdf
 from views.source_view import show_source_details
 
 
+# 1. 국가, 분석 분야, 사용자 유형 선택 영역 구성
 def show_analysis_controls(data, options):
     title_column, country_column, field_column, persona_column = st.columns(
         [3.35, 1, 1, 1.15],
@@ -70,12 +72,15 @@ def show_analysis_controls(data, options):
     return row, field, persona
 
 
+# 2. 선택된 조건에 맞는 종합 분석 화면 구성
 def show_analysis_page(data, options):
+    # 2.1. 사용자 선택값으로 백엔드 분석 결과 조회
     row, field, persona = show_analysis_controls(data, options)
     analysis, _ = load_analysis(row.iso3, persona, field)
     score = analysis["analysis"]["score"]
     main_column, side_column = st.columns([2.45, 1], gap="medium")
 
+    # 2.2. 점수, 추세, 핵심 근거 영역 표시
     with main_column:
         with st.container(border=True, height=280, key="score_panel"):
             show_score_panel(score, analysis["analysis"]["score_level"], analysis["metrics"])
@@ -102,6 +107,7 @@ def show_analysis_page(data, options):
             with st.container(border=True, height=350, key="evidence_panel"):
                 show_evidence_panel(analysis["evidence"])
 
+    # 2.3. 종합 해석, 추천 모델, 주의 요인 영역 표시
     with side_column:
         with st.container(border=True, height=168, key="ai_summary_panel"):
             show_ai_summary(analysis["country"]["name"], analysis["interpretation"])
@@ -110,6 +116,7 @@ def show_analysis_page(data, options):
         with st.container(border=True, height=134, key="warning_panel"):
             show_warning_panel(analysis["risks"])
 
+    # 2.4. 근거 화면 이동과 PDF 다운로드 기능 제공
     st.markdown('<div class="action-row">', unsafe_allow_html=True)
     evidence_button_column, pdf_button_column = st.columns([1, 1.45], gap="large")
     with evidence_button_column:

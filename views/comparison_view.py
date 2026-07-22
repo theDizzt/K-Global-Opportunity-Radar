@@ -1,3 +1,4 @@
+# 0. 모듈 불러오기
 import pandas as pd
 import streamlit as st
 
@@ -6,6 +7,7 @@ from services.chart_service import make_compare_chart
 from services.data_service import load_analysis
 
 
+# 1. 동일 조건으로 국가별 기회점수 비교 화면 구성
 def show_compare_page(data, options):
     st.markdown('<div class="headline">국가별 협력기회 비교</div>', unsafe_allow_html=True)
     st.markdown('<div class="subline">동일한 사용자 유형과 분야 기준으로 시범국가를 비교합니다.</div>', unsafe_allow_html=True)
@@ -26,6 +28,7 @@ def show_compare_page(data, options):
             on_change=restart_animations,
         )
 
+    # 1.1. 국가별 분석 API 결과를 차트와 표 형식으로 변환
     compare_rows = []
     chart_rows = []
     for _, row in data.iterrows():
@@ -46,6 +49,7 @@ def show_compare_page(data, options):
             }
         )
 
+    # 1.2. 국가별 기회점수 비교 차트 표시
     with st.container(border=True, key="compare_chart_panel"):
         st.markdown(
             f'<div class="panel-title"><span class="panel-icon">▥</span>{field} 분야 기회점수</div>',
@@ -58,4 +62,5 @@ def show_compare_page(data, options):
             key="country_comparison",
         )
 
+    # 1.3. 세부지표 비교표 표시
     st.dataframe(pd.DataFrame(compare_rows), width="stretch", hide_index=True)
