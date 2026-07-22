@@ -1,8 +1,5 @@
 import plotly.graph_objects as go
 
-from config.constants import SIGNAL_HISTORY
-from services.scoring_service import calculate_score
-
 
 def make_gauge_chart(score):
     chart = go.Figure(
@@ -36,10 +33,9 @@ def make_gauge_chart(score):
     return chart
 
 
-def make_signal_chart(row, score):
-    years = [2022, 2023, 2024, 2025, 2026]
-    values = SIGNAL_HISTORY[row.iso3].copy()
-    values[-1] = round(score)
+def make_signal_chart(trend):
+    years = [point["year"] for point in trend]
+    values = [point["score"] for point in trend]
 
     chart = go.Figure()
     chart.add_trace(
@@ -69,12 +65,7 @@ def make_signal_chart(row, score):
     return chart
 
 
-def make_compare_chart(data, persona, field):
-    compare_data = data.copy()
-    compare_data["score"] = compare_data.apply(
-        lambda row: calculate_score(row, persona, field),
-        axis=1,
-    )
+def make_compare_chart(compare_data):
     compare_data = compare_data.sort_values("score")
 
     chart = go.Figure(

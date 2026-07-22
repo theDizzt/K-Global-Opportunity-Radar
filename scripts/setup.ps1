@@ -42,3 +42,4 @@ Write-Host "[3/3] Installing packages" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Streamlit environment is ready." -ForegroundColor Green
 Write-Host "Run: .\scripts\run.ps1"
+Write-Host "API: .\scripts\run_api.ps1"

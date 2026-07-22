@@ -29,6 +29,28 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 브라우저에서 `http://localhost:8501`을 열면 됩니다.
 
+`run.ps1`은 SQLite를 준비하고 FastAPI(8000)와 Streamlit(8501)을 함께 실행합니다. 이미 API가 실행 중이면 기존 프로세스를 그대로 사용합니다. API에 일시적으로 연결할 수 없는 경우 화면은 같은 SQLite 저장소를 직접 읽는 데모 안전 모드로 동작합니다.
+
+## 백엔드 API 실행
+
+```powershell
+.\scripts\run_api.ps1
+```
+
+- API 문서: `http://localhost:8000/docs`
+- 상태 확인: `http://localhost:8000/api/v1/health`
+- API 계약: [docs/api-contract.md](docs/api-contract.md)
+
+API는 `data/k_global_radar.db` SQLite 데이터베이스를 사용합니다. 데이터베이스가 없으면 실행 시 시범 CSV와 설정 데이터를 자동으로 적재합니다.
+
+데이터베이스를 처음부터 다시 구성하려면 다음 명령을 실행합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.database.init_db --reset
+```
+
+SQLite 파일은 실행 데이터이므로 Git에 포함하지 않습니다. 스키마는 `backend/database/schema.sql`에서 관리합니다.
+
 ## 구현 범위
 
 - 상단 메뉴: 기회 분석 / 국가 비교 / 근거 데이터
@@ -48,10 +70,15 @@ app.py                  # Streamlit 시작점과 메뉴 라우팅
 components/             # 헤더, 분석 패널, 공통 스타일 로더
 config/                 # 경로, 페이지 설정, 가중치와 고정 데이터
 services/               # 데이터 로딩, 점수, 차트, PDF 생성
+backend/                # FastAPI, API 모델, 저장소, 백엔드 서비스
+frontend_services/      # Streamlit용 API 클라이언트와 SQLite 안전 모드
+backend/database/       # SQLite 스키마, 연결, 초기 적재
+docs/                   # API 계약과 개발 문서
 styles/dashboard.css    # 대시보드 전용 CSS
 views/                  # 기회 분석, 국가 비교, 근거 데이터 화면
 data/                   # 시범 국가 데이터
 scripts/                # 환경 구축 및 실행 스크립트
+tests/                  # API와 서비스 자동 테스트
 ```
 
 ## 라이선스

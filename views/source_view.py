@@ -1,20 +1,24 @@
+from html import escape
+
 import streamlit as st
 
-from config.constants import SOURCE_DESCRIPTIONS, SOURCE_LINKS
+from services.data_service import load_sources
 
 
-def show_source_details():
+def show_source_details(sources=None):
+    if sources is None:
+        sources, _ = load_sources()
     st.markdown('<div class="headline" style="font-size:2rem">근거 데이터</div>', unsafe_allow_html=True)
     st.markdown('<div class="subline">추천에 사용한 기관별 데이터와 원문 확인 경로입니다.</div>', unsafe_allow_html=True)
 
     with st.container(key="source_cards"):
-        columns = st.columns(4)
-        for index, (source, url) in enumerate(SOURCE_LINKS.items()):
+        columns = st.columns(len(sources))
+        for index, source in enumerate(sources):
             columns[index].markdown(
                 f"""
                 <div class="source-card">
-                    <a href="{url}" target="_blank">{source} ↗</a>
-                    <p>{SOURCE_DESCRIPTIONS[source]}</p>
+                    <a href="{escape(source['url'], quote=True)}" target="_blank">{escape(source['name'])} ↗</a>
+                    <p>{escape(source['description'])}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,

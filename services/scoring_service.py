@@ -3,7 +3,7 @@ from config.constants import FIELD_SCORES, PERSONA_WEIGHTS
 
 def calculate_score(row, persona, field):
     weights = PERSONA_WEIGHTS[persona]
-    base_score = sum(row[column] * weight for column, weight in weights.items())
+    base_score = sum(getattr(row, column) * weight for column, weight in weights.items())
     field_score = FIELD_SCORES[field][row.iso3]
 
     return round(base_score * 0.78 + field_score * 0.22, 1)
