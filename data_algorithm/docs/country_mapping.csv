@@ -1,0 +1,15 @@
+iso3,iso2,name_ko,name_en,alias,language,source_type,is_preferred
+VNM,VN,베트남,Vietnam,베트남,ko,COMMON,1
+VNM,VN,베트남,Vietnam,Vietnam,en,COMMON,1
+VNM,VN,베트남,Vietnam,Viet Nam,en,COMMON,0
+VNM,VN,베트남,Vietnam,VietNam,en,COMMON,0
+VNM,VN,베트남,Vietnam,Việt Nam,vi,COMMON,0
+VNM,VN,베트남,Vietnam,Socialist Republic of Viet Nam,en,COMMON,0
+IDN,ID,인도네시아,Indonesia,인도네시아,ko,COMMON,1
+IDN,ID,인도네시아,Indonesia,Indonesia,en,COMMON,1
+IDN,ID,인도네시아,Indonesia,Republic of Indonesia,en,COMMON,0
+IDN,ID,인도네시아,Indonesia,Republik Indonesia,id,COMMON,0
+MNG,MN,몽골,Mongolia,몽골,ko,COMMON,1
+MNG,MN,몽골,Mongolia,Mongolia,en,COMMON,1
+MNG,MN,몽골,Mongolia,Монгол Улс,mn,COMMON,0
+MNG,MN,몽골,Mongolia,Mongol Uls,mn,COMMON,0

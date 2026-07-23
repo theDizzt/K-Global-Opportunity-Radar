@@ -36,13 +36,29 @@ def initialize_database(database_path=DATABASE_PATH, reset=False):
         country_count = connection.execute("SELECT COUNT(*) FROM countries").fetchone()[0]
         if country_count == 0:
             _seed_database(connection)
+        _migrate_algorithm_tables(connection)
 
     return Path(database_path)
+
+
+# 2.1. 기존 로컬 DB에도 신규 알고리즘 메타데이터 열을 안전하게 추가
+def _migrate_algorithm_tables(connection):
+    columns = {
+        row["name"] for row in connection.execute("PRAGMA table_info(opportunity_scores)")
+    }
+    if "is_demo" not in columns:
+        connection.execute(
+            """
+            ALTER TABLE opportunity_scores
+            ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN (0, 1))
+            """
+        )
 
 
 # 3. 재설정 시 외래키 순서를 고려하여 기존 시범 데이터 삭제
 def _clear_seed_data(connection):
     for table in (
+        "opportunity_scores",
         "document_countries",
         "source_documents",
         "country_aliases",

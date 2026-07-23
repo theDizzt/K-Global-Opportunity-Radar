@@ -132,10 +132,31 @@ CREATE TABLE IF NOT EXISTS document_countries (
     PRIMARY KEY (document_uri, country_iso3)
 );
 
--- 14. 국가·근거·문서 조회 성능을 높이는 검색 인덱스
+-- 14. 데이터·알고리즘 파이프라인에서 계산한 국가·분야별 점수 스냅샷
+CREATE TABLE IF NOT EXISTS opportunity_scores (
+    country_iso3 TEXT NOT NULL REFERENCES countries(iso3) ON DELETE CASCADE,
+    field TEXT NOT NULL,
+    score_version TEXT NOT NULL,
+    as_of_date TEXT NOT NULL,
+    demand_score REAL NOT NULL CHECK(demand_score BETWEEN 0 AND 100),
+    policy_alignment_score REAL NOT NULL CHECK(policy_alignment_score BETWEEN 0 AND 100),
+    readiness_score REAL NOT NULL CHECK(readiness_score BETWEEN 0 AND 100),
+    korean_base_score REAL NOT NULL CHECK(korean_base_score BETWEEN 0 AND 100),
+    opportunity_score REAL NOT NULL CHECK(opportunity_score BETWEEN 0 AND 100),
+    data_confidence REAL NOT NULL CHECK(data_confidence BETWEEN 0 AND 100),
+    is_demo INTEGER NOT NULL DEFAULT 0 CHECK(is_demo IN (0, 1)),
+    risk_level INTEGER,
+    sensitivity_low REAL,
+    sensitivity_high REAL,
+    PRIMARY KEY (country_iso3, field, score_version, as_of_date)
+);
+
+-- 15. 국가·근거·문서·점수 조회 성능을 높이는 검색 인덱스
 CREATE INDEX IF NOT EXISTS idx_countries_region ON countries(region);
 CREATE INDEX IF NOT EXISTS idx_evidence_country ON evidence(country_iso3);
 CREATE INDEX IF NOT EXISTS idx_risks_country ON risk_factors(country_iso3);
 CREATE INDEX IF NOT EXISTS idx_documents_date ON source_documents(published_date);
 CREATE INDEX IF NOT EXISTS idx_documents_field ON source_documents(primary_field);
 CREATE INDEX IF NOT EXISTS idx_document_countries_country ON document_countries(country_iso3);
+CREATE INDEX IF NOT EXISTS idx_opportunity_scores_lookup
+    ON opportunity_scores(country_iso3, field, as_of_date DESC);
