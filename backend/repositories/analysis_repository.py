@@ -47,6 +47,24 @@ class DataSourceRecord:
     description: str
 
 
+@dataclass(frozen=True)
+class OpportunityScoreRecord:
+    country_iso3: str
+    field: str
+    score_version: str
+    as_of_date: date
+    demand_score: float
+    policy_alignment_score: float
+    readiness_score: float
+    korean_base_score: float
+    opportunity_score: float
+    data_confidence: float
+    is_demo: bool
+    risk_level: int | None
+    sensitivity_low: float | None
+    sensitivity_high: float | None
+
+
 # 2. 추세, 프로젝트, 근거, 추천, 위험요인 조회 저장소
 class AnalysisRepository:
     # 2.1. 데이터베이스 준비 및 경로 설정
@@ -65,6 +83,40 @@ class AnalysisRepository:
                 (iso3,),
             ).fetchall()
         return [(row["year"], row["score"]) for row in rows]
+
+    # 2.2.1. 데이터·알고리즘 파이프라인의 최신 국가·분야 점수 조회
+    def get_opportunity_score(self, iso3: str, field: str):
+        with get_connection(self.database_path) as connection:
+            row = connection.execute(
+                """
+                SELECT * FROM opportunity_scores
+                WHERE country_iso3 = ? AND field = ?
+                ORDER BY as_of_date DESC, score_version DESC
+                LIMIT 1
+                """,
+                (iso3, field),
+            ).fetchone()
+        if row is None:
+            return None
+        values = dict(row)
+        values["as_of_date"] = date.fromisoformat(values["as_of_date"])
+        return OpportunityScoreRecord(**values)
+
+    # 2.2.2. 실제 점수 스냅샷으로 연도별 추세 구성
+    def get_opportunity_history(self, iso3: str, field: str):
+        with get_connection(self.database_path) as connection:
+            rows = connection.execute(
+                """
+                SELECT substr(as_of_date, 1, 4) AS year,
+                       AVG(opportunity_score) AS score
+                FROM opportunity_scores
+                WHERE country_iso3 = ? AND field = ?
+                GROUP BY substr(as_of_date, 1, 4)
+                ORDER BY year
+                """,
+                (iso3, field),
+            ).fetchall()
+        return [(int(row["year"]), round(row["score"])) for row in rows]
 
     # 2.3. 국가별 대표 프로젝트와 해석 정보 조회
     def get_project(self, iso3: str):
