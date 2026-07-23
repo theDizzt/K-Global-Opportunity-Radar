@@ -51,6 +51,28 @@ API는 `data/k_global_radar.db` SQLite 데이터베이스를 사용합니다. �
 
 SQLite 파일은 실행 데이터이므로 Git에 포함하지 않습니다. 스키마는 `backend/database/schema.sql`에서 관리합니다.
 
+## 외교부 LOD 데이터 수집
+
+외교부 국가 매핑, 외교일지, 보도자료를 실제 SQLite 데이터로 수집할 수 있습니다.
+
+```powershell
+.\scripts\collect_mofa.ps1 --countries VNM,IDN,MNG --limit 100
+```
+
+수집된 실제 문서는 분석 화면의 핵심 근거에 우선 표시되고, 수집 자료가 없으면 기존 시범 근거를 사용합니다. 세부 구조와 제한사항은 [docs/data-collection.md](docs/data-collection.md)를 확인하세요.
+
+수집 후에는 다음 API에서 적재 상태와 품질을 먼저 확인할 수 있습니다.
+
+```text
+GET /api/v1/collection/status
+GET /api/v1/countries/VNM/data-quality
+GET /api/v1/countries/VNM/evidence?field=교육
+GET /api/v1/countries/VNM/signals?field=교육
+```
+
+`signals` 응답은 문서 빈도와 자료종류 가중치로 계산한 검증 전 원시지표입니다.
+현재 화면의 최종 기회점수에는 자동 반영되지 않습니다.
+
 ## 구현 범위
 
 - 상단 메뉴: 기회 분석 / 국가 비교 / 근거 데이터

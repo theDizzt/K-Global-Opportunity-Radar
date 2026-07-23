@@ -1,3 +1,4 @@
+/* 1. 본문과 점수 표시에 사용하는 웹폰트 등록 */
 @font-face {
     font-family: 'Pretendard';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
@@ -16,6 +17,7 @@
     --app-font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* 2. Streamlit 기본 요소에 공통 폰트와 페이지 배경 적용 */
 html, body, [class*="css"], .stApp,
 .stApp button, .stApp input, .stApp textarea, .stApp select, .stApp option,
 .stApp label, .stApp table, .stApp [data-baseweb],
@@ -27,6 +29,7 @@ html, body, [class*="css"], .stApp,
 header[data-testid="stHeader"] { background: transparent; }
 [data-testid="collapsedControl"] { display: none; }
 
+/* 3. 서비스 브랜드·제목·분석 조건 선택 영역 구성 */
 .brand-row {
     display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
     font-size: 1.05rem; font-weight: 800; color: #092a4e;
@@ -60,6 +63,7 @@ div[data-testid="stRadio"] label {
     font-weight: 700; padding: .28rem .9rem .28rem .55rem;
 }
 
+/* 4. 공통 패널과 종합점수 표시 구성 */
 .panel {
     background: #ffffff; border: 1px solid #dce4ed; border-radius: 12px;
     padding: 1.15rem 1.25rem; box-shadow: 0 3px 9px rgba(22, 48, 78, .06);
@@ -83,6 +87,7 @@ div[data-testid="stRadio"] label {
     animation: fade-refresh-a .34s ease-out .06s both;
 }
 
+/* 5. 세부 평가지표와 진행 막대 구성 */
 .metric-item {
     display: grid; grid-template-columns: 34px 130px 1fr 42px; gap: 10px;
     align-items: center; min-height: 52px; border-bottom: 1px solid #e2e8ef;
@@ -111,6 +116,7 @@ div[data-testid="stRadio"] label {
     font-weight: 300; color: #0757b0; font-size: 1.35rem; text-align: right;
 }
 
+/* 6. AI 해석·근거·추천 협력 모델 카드 구성 */
 .ai-card { padding: .15rem .1rem; animation: fade-refresh-a .36s ease-out both; }
 .ai-heading {
     display: flex; align-items: center; gap: 12px; color: #0754aa;
@@ -143,6 +149,7 @@ div[data-testid="stRadio"] label {
     border-radius: 6px; color: #ffffff; background: #0b5bb4; font-weight: 800;
 }
 
+/* 7. 주의 요인과 데이터 출처 카드 구성 */
 .warning-panel { border-color: #f0c38f; background: #fffdf9; }
 .warning-title { color: #df6d00; }
 .warning-tag {
@@ -164,6 +171,7 @@ div[data-testid="stRadio"] label {
 .st-key-source_cards [data-testid="stColumn"]:nth-child(3) .source-card { animation-delay: .12s; }
 .st-key-source_cards [data-testid="stColumn"]:nth-child(4) .source-card { animation-delay: .18s; }
 
+/* 8. 화면 이동과 PDF 다운로드 버튼 구성 */
 .action-row div[data-testid="stButton"] button,
 .action-row div[data-testid="stDownloadButton"] button {
     min-height: 52px; border-radius: 9px; font-size: 1rem; font-weight: 800;
@@ -172,6 +180,7 @@ div[data-testid="stRadio"] label {
     color: #ffffff; background: linear-gradient(90deg, #075ab9, #0755aa); border: none;
 }
 
+/* 9. 입력 변경 시 차트·수치·카드에 적용할 재생 준비 */
 [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
     animation: chart-refresh-a .45s cubic-bezier(.2, .75, .25, 1) both;
     will-change: opacity, transform, filter;
@@ -188,6 +197,7 @@ div[data-testid="stRadio"] label {
     will-change: opacity, transform;
 }
 
+/* 10. 애니메이션 버전 전환에 사용하는 키프레임 */
 @keyframes score-refresh-a {
     from { opacity: .3; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
@@ -238,6 +248,7 @@ div[data-testid="stRadio"] label {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* 11. 사용자 접근성 설정에 따라 움직임 효과 제거 */
 @media (prefers-reduced-motion: reduce) {
     .score-number, .score-level, .metric-item, .metric-fill, .ai-card,
     .evidence-row, .model-row, .warning-tag, .source-card,
@@ -249,6 +260,7 @@ div[data-testid="stRadio"] label {
     }
 }
 
+/* 12. 좁은 화면에서 여백·제목·지표 크기 조정 */
 @media (max-width: 900px) {
     .block-container { padding-left: 1rem; padding-right: 1rem; }
     .headline { min-height: auto; font-size: clamp(1.75rem, 7vw, 2.35rem); }

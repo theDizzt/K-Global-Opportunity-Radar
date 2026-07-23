@@ -1,4 +1,4 @@
-# 0. 오류 발생 시 즉시 중단하고 실행 경로 설정
+# 0. 오류 발생 시 즉시 중단하고 프로젝트·Python 경로 설정
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
@@ -8,10 +8,6 @@ if (-not (Test-Path -LiteralPath $VenvPython)) {
     throw ".venv was not found. Run .\scripts\setup.ps1 first."
 }
 
-# 2. SQLite 초기화 후 FastAPI 개발 서버 실행
+# 2. 전달받은 국가·데이터셋·건수 옵션으로 외교부 수집기 실행
 Set-Location $ProjectRoot
-& $VenvPython -m backend.database.init_db
-if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-}
-& $VenvPython -m uvicorn backend.main:app --reload --port 8000
+& $VenvPython -m backend.collectors.run @args

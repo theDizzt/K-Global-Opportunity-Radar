@@ -20,6 +20,22 @@
 | GET | `/api/v1/countries` | 분석 대상 국가 목록 |
 | GET | `/api/v1/countries/{iso3}` | 국가 원시 지표와 기본정보 |
 | POST | `/api/v1/analysis` | 국가·사용자·분야별 분석 결과 |
+| GET | `/api/v1/collection/status` | 외교부 데이터 최근 수집 상태와 적재량 |
+| GET | `/api/v1/countries/{iso3}/data-quality` | 국가별 실제 문서 품질 보고서 |
+| GET | `/api/v1/countries/{iso3}/evidence` | 국가·분야별 수집 원문 목록 |
+| GET | `/api/v1/countries/{iso3}/signals` | 국가·분야별 연도 단위 원시지표 |
+
+## 수집 데이터 점검과 원시지표
+
+`signals`의 `field`는 필수이며 교육, 보건, 디지털, 기후·환경, 문화·한류,
+청년취업 중 하나를 사용합니다. 응답의 `formula_version`과 `formula_notice`는
+산식과 해석 범위를 명시합니다. 현재 원시지표는 수집 품질을 검토하기 위한 값이며
+`POST /api/v1/analysis`의 최종 기회점수에는 반영되지 않습니다.
+
+```text
+GET /api/v1/countries/VNM/signals?field=교육
+GET /api/v1/countries/VNM/evidence?field=교육&limit=20
+```
 
 ## 데이터베이스 초기화
 

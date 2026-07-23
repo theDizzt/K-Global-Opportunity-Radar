@@ -1,1 +1,3 @@
-"""Pydantic request and response models."""
+"""Pydantic 요청·응답 모델."""
+
+# 0. API 데이터 계약 모델을 패키지로 묶습니다.

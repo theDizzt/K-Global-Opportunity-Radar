@@ -1,1 +1,3 @@
-"""SQLite connection and initialization utilities."""
+"""SQLite 연결과 초기화 도구."""
+
+# 0. 데이터베이스 연결·초기화 모듈을 패키지로 묶습니다.

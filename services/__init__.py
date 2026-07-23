@@ -1,2 +1,4 @@
-"""Business logic and output services."""
+"""화면용 비즈니스 로직과 출력 서비스."""
+
+# 0. 차트·점수·PDF 처리 모듈을 패키지로 묶습니다.
 

@@ -34,6 +34,7 @@ class AnalysisRequest(ApiModel):
     field: AnalysisField
     capabilities: list[str] = Field(default_factory=list, max_length=10)
 
+    # 3.1. 입력된 국가 코드를 공백 없는 ISO3 대문자로 통일
     @field_validator("country_iso3")
     @classmethod
     def normalize_iso3(cls, value: str):

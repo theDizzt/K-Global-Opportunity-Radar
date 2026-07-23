@@ -1,1 +1,3 @@
-"""API route package."""
+"""API 라우터 패키지."""
+
+# 0. FastAPI 라우터 모듈을 패키지로 묶습니다.

@@ -85,6 +85,30 @@ class ApiTestCase(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(response.status_code, 422)
 
+    # 1.10. 실제 데이터 수집 상태 API의 기본 응답 구조 검증
+    async def test_collection_status_contract(self):
+        response = await self.client.get("/api/v1/collection/status")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["source_code"], "MOFA")
+        self.assertIn("stored_documents", result)
+        self.assertIn("datasets", result)
+
+    # 1.11. 국가별 품질 보고서와 원시 신호 API의 입력 검증
+    async def test_data_insight_contracts(self):
+        quality = await self.client.get("/api/v1/countries/vnm/data-quality")
+        signals = await self.client.get(
+            "/api/v1/countries/VNM/signals",
+            params={"field": "교육"},
+        )
+        missing_field = await self.client.get("/api/v1/countries/VNM/signals")
+
+        self.assertEqual(quality.status_code, 200)
+        self.assertEqual(quality.json()["country_iso3"], "VNM")
+        self.assertEqual(signals.status_code, 200)
+        self.assertEqual(signals.json()["formula_version"], "mofa-raw-v1")
+        self.assertEqual(missing_field.status_code, 422)
+
 
 # 2. 파일을 직접 실행했을 때 테스트 시작
 if __name__ == "__main__":

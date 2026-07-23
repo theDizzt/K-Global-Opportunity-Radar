@@ -18,7 +18,11 @@ API_FALLBACK_ENABLED = os.getenv("K_GLOBAL_API_FALLBACK", "true").lower() in {
     "on",
 }
 
-# 3. Streamlit 페이지 기본 설정
+# 3. 외교부 LOD 수집 요청 설정
+MOFA_SPARQL_TIMEOUT = float(os.getenv("MOFA_SPARQL_TIMEOUT", "20"))
+MOFA_COLLECTION_LIMIT = int(os.getenv("MOFA_COLLECTION_LIMIT", "100"))
+
+# 4. Streamlit 페이지 기본 설정
 PAGE_CONFIG = {
     "page_title": "외교협력 기회 레이더",
     "page_icon": "🌐",

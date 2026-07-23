@@ -8,6 +8,7 @@ from config.settings import DATABASE_PATH
 
 
 # 1. 분석 관련 조회 결과를 보관하는 레코드 모델
+# 1.1. 근거 문서와 출처 정보를 전달하는 레코드
 @dataclass(frozen=True)
 class EvidenceRecord:
     title: str
@@ -18,6 +19,7 @@ class EvidenceRecord:
     is_demo: bool
 
 
+# 1.2. 국가별 주의 요인과 출처를 전달하는 레코드
 @dataclass(frozen=True)
 class RiskRecord:
     title: str
@@ -27,6 +29,7 @@ class RiskRecord:
     source_url: str
 
 
+# 1.3. 추천 프로젝트 설명을 전달하는 레코드
 @dataclass(frozen=True)
 class ProjectRecord:
     title: str
@@ -35,6 +38,7 @@ class ProjectRecord:
     sdgs: str
 
 
+# 1.4. 공공데이터 제공기관 정보를 전달하는 레코드
 @dataclass(frozen=True)
 class DataSourceRecord:
     code: str
@@ -87,8 +91,12 @@ class AnalysisRepository:
             ).fetchall()
         return [DataSourceRecord(**dict(row)) for row in rows]
 
-    # 2.5. 국가별 분석 근거와 원문 URL 조회
-    def get_evidence(self, iso3: str):
+    # 2.5. 실제 수집 문서를 우선하고 없으면 시범 근거 조회
+    def get_evidence(self, iso3: str, field: str | None = None):
+        live_evidence = self._get_live_evidence(iso3, field)
+        if live_evidence:
+            return live_evidence
+
         with get_connection(self.database_path) as connection:
             rows = connection.execute(
                 """
@@ -111,6 +119,56 @@ class AnalysisRepository:
             )
             for row in rows
         ]
+
+    # 2.5.1. 선택 분야와 일치하는 외교부 LOD 문서를 최신순으로 조회
+    def _get_live_evidence(self, iso3: str, field: str | None):
+        with get_connection(self.database_path) as connection:
+            rows = connection.execute(
+                """
+                SELECT d.title, d.primary_field, d.published_date,
+                       d.source_url, d.dataset_code, s.name AS source
+                FROM source_documents AS d
+                JOIN document_countries AS dc ON dc.document_uri = d.document_uri
+                JOIN data_sources AS s ON s.code = d.source_code
+                WHERE dc.country_iso3 = ?
+                  AND d.published_date IS NOT NULL
+                  AND (? IS NULL OR d.primary_field IN (?, '외교 일반'))
+                ORDER BY
+                    CASE WHEN d.primary_field = ? THEN 0 ELSE 1 END,
+                    d.published_date DESC,
+                    d.title
+                LIMIT 3
+                """,
+                (iso3, field, field, field),
+            ).fetchall()
+        dataset_names = {
+            "mofadaily": "외교일지",
+            "mofapress": "보도자료",
+        }
+        return [
+            EvidenceRecord(
+                title=row["title"],
+                category=f"{dataset_names.get(row['dataset_code'], '외교자료')} · {row['primary_field']}",
+                source=row["source"],
+                reference_date=date.fromisoformat(row["published_date"]),
+                source_url=row["source_url"],
+                is_demo=False,
+            )
+            for row in rows
+        ]
+
+    # 2.5.2. 국가별로 적재된 실제 외교부 문서 수 조회
+    def count_live_documents(self, iso3: str):
+        with get_connection(self.database_path) as connection:
+            return connection.execute(
+                """
+                SELECT COUNT(*)
+                FROM document_countries AS dc
+                JOIN source_documents AS d ON d.document_uri = dc.document_uri
+                WHERE dc.country_iso3 = ?
+                """,
+                (iso3,),
+            ).fetchone()[0]
 
     # 2.6. 국가별 추천 협력 모델 조회
     def get_recommendations(self, iso3: str):

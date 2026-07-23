@@ -43,6 +43,10 @@ def initialize_database(database_path=DATABASE_PATH, reset=False):
 # 3. 재설정 시 외래키 순서를 고려하여 기존 시범 데이터 삭제
 def _clear_seed_data(connection):
     for table in (
+        "document_countries",
+        "source_documents",
+        "country_aliases",
+        "raw_source_payloads",
         "collection_logs",
         "risk_factors",
         "evidence",

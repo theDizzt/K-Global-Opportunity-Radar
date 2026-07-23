@@ -49,6 +49,7 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
         for (year, _), value in zip(history, trend_values, strict=True)
     ]
     # 3.3. 저장소의 근거와 주의 요인을 API 응답 모델로 변환
+    evidence_records = analysis_repository.get_evidence(country.iso3, field)
     evidence = [
         EvidenceItem(
             title=item.title,
@@ -58,7 +59,7 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
             source_url=item.source_url,
             is_demo=item.is_demo,
         )
-        for item in analysis_repository.get_evidence(country.iso3)
+        for item in evidence_records
     ]
     risks = [
         RiskItem(
@@ -96,6 +97,11 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
             completeness=country.completeness,
             reference_date=country.updated,
             is_demo=True,
-            notice=DATA_NOTICE,
+            notice=(
+                DATA_NOTICE
+                if all(item.is_demo for item in evidence_records)
+                else "기회점수는 시범 산식이며 핵심 근거는 수집된 외교부 LOD 원문을 사용합니다. "
+                "실제 사업 결정 전 최신 원문과 현지 정보를 다시 확인해야 합니다."
+            ),
         ),
     )

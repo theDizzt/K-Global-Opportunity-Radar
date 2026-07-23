@@ -1,1 +1,3 @@
-"""Data access repositories."""
+"""데이터 접근 저장소."""
+
+# 0. SQLite 조회·저장 모듈을 패키지로 묶습니다.

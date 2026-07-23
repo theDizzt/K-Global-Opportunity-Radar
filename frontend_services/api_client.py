@@ -15,6 +15,7 @@ from config.settings import API_BASE_URL, API_FALLBACK_ENABLED, API_TIMEOUT
 Transport = Literal["api", "sqlite_fallback"]
 
 
+# 1.1. API와 SQLite 안전 모드를 모두 사용할 수 없을 때 발생하는 오류
 class ApiClientError(RuntimeError):
     """API와 설정된 안전 모드를 모두 사용할 수 없을 때 발생하는 오류입니다."""
 
@@ -79,6 +80,7 @@ class RadarGateway:
             raise ApiClientError(f"Backend API request failed: {method} {path}") from error
 
     # 4. API 장애 시 SQLite 저장소에서 동일한 응답 생성
+    # 4.1. SQLite의 사용자 유형·분야·권역을 선택 항목 형식으로 변환
     @staticmethod
     def _fallback_options():
         from backend.models.analysis import AnalysisField, Persona
@@ -90,6 +92,7 @@ class RadarGateway:
             "regions": sorted({country.region for country in countries}),
         }
 
+    # 4.2. SQLite 국가 레코드를 API 국가 목록 형식으로 변환
     @staticmethod
     def _fallback_countries():
         return [
@@ -97,10 +100,12 @@ class RadarGateway:
             for country in country_repository.list_all()
         ]
 
+    # 4.3. SQLite 제공기관 레코드를 API 출처 목록 형식으로 변환
     @staticmethod
     def _fallback_sources():
         return [vars(source) for source in analysis_repository.list_sources()]
 
+    # 4.4. SQLite 국가정보와 요청 조건으로 분석 응답 생성
     @staticmethod
     def _fallback_analysis(body):
         request = AnalysisRequest(**body)

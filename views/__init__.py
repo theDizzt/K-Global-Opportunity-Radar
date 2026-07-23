@@ -1,2 +1,4 @@
-"""Top-level application views."""
+"""최상위 애플리케이션 화면."""
+
+# 0. 메뉴별 Streamlit 화면 모듈을 패키지로 묶습니다.
 
