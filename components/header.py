@@ -1,8 +1,10 @@
+# 0. 모듈 불러오기
 import streamlit as st
 
 from components.animations import restart_animations
 
 
+# 1. 서비스 브랜드와 메인 메뉴 표시
 def show_header():
     st.markdown(
         """
