@@ -1,2 +1,4 @@
-"""Application configuration package."""
+"""애플리케이션 설정 패키지."""
+
+# 0. 상수와 실행환경 설정 모듈을 패키지로 묶습니다.
 

@@ -1,9 +1,8 @@
+# 0. 모듈 불러오기
 import plotly.graph_objects as go
 
-from config.constants import SIGNAL_HISTORY
-from services.scoring_service import calculate_score
 
-
+# 1. 협력기회 종합점수 도넛 게이지 생성
 def make_gauge_chart(score):
     chart = go.Figure(
         go.Pie(
@@ -36,10 +35,10 @@ def make_gauge_chart(score):
     return chart
 
 
-def make_signal_chart(row, score):
-    years = [2022, 2023, 2024, 2025, 2026]
-    values = SIGNAL_HISTORY[row.iso3].copy()
-    values[-1] = round(score)
+# 2. 최근 연도별 협력 신호 추세 차트 생성
+def make_signal_chart(trend):
+    years = [point["year"] for point in trend]
+    values = [point["score"] for point in trend]
 
     chart = go.Figure()
     chart.add_trace(
@@ -69,12 +68,8 @@ def make_signal_chart(row, score):
     return chart
 
 
-def make_compare_chart(data, persona, field):
-    compare_data = data.copy()
-    compare_data["score"] = compare_data.apply(
-        lambda row: calculate_score(row, persona, field),
-        axis=1,
-    )
+# 3. 국가별 기회점수 가로 막대 차트 생성
+def make_compare_chart(compare_data):
     compare_data = compare_data.sort_values("score")
 
     chart = go.Figure(

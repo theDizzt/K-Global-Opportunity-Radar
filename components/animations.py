@@ -1,19 +1,24 @@
+# 0. 모듈 불러오기
 import streamlit as st
 
 
+# 1. 애니메이션 재생 상태를 저장할 세션 키
 ANIMATION_VERSION_KEY = "_animation_version"
 
 
+# 2. 애니메이션 상태 초기화
 def initialize_animation_state():
     if ANIMATION_VERSION_KEY not in st.session_state:
         st.session_state[ANIMATION_VERSION_KEY] = 0
 
 
+# 3. 입력값 변경 시 애니메이션 버전 갱신
 def restart_animations():
     initialize_animation_state()
     st.session_state[ANIMATION_VERSION_KEY] += 1
 
 
+# 4. 현재 버전에 맞는 CSS 애니메이션 적용
 def apply_animation_variant():
     initialize_animation_state()
     variant = "a" if st.session_state[ANIMATION_VERSION_KEY] % 2 == 0 else "b"

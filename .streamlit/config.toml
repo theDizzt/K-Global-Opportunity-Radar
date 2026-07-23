@@ -1,3 +1,4 @@
+# 1. Streamlit 화면의 공통 색상과 기본 글꼴 설정
 [theme]
 primaryColor = "#2ED6A1"
 backgroundColor = "#F5F8FC"
@@ -7,6 +8,7 @@ font = "Pretendard, sans-serif"
 headingFont = "Pretendard, sans-serif"
 codeFont = "Pretendard, monospace"
 
+# 2. 굵기별 Pretendard 웹폰트 등록
 [[theme.fontFaces]]
 family = "Pretendard"
 url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2"
@@ -37,8 +39,10 @@ url = "https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Extra
 weight = "800"
 style = "normal"
 
+# 3. 브라우저 자동 실행 없이 서버 모드로 동작
 [server]
 headless = true
 
+# 4. Streamlit 사용 통계 수집 비활성화
 [browser]
 gatherUsageStats = false

@@ -1,3 +1,4 @@
+# 1. 사용자 유형별 기회점수 지표 가중치
 PERSONA_WEIGHTS = {
     "대학생 팀": {"diplomacy": 0.15, "oda": 0.25, "korean_base": 0.25, "people_exchange": 0.25, "esg": 0.10},
     "스타트업": {"diplomacy": 0.20, "oda": 0.20, "korean_base": 0.15, "people_exchange": 0.20, "esg": 0.25},
@@ -6,6 +7,7 @@ PERSONA_WEIGHTS = {
     "청년 구직자": {"diplomacy": 0.15, "oda": 0.10, "korean_base": 0.25, "people_exchange": 0.40, "esg": 0.10},
 }
 
+# 2. 국가·분야별 시범 적합도 점수
 FIELD_SCORES = {
     "교육": {"VNM": 96, "IDN": 84, "MNG": 86},
     "보건": {"VNM": 82, "IDN": 92, "MNG": 91},
@@ -15,12 +17,14 @@ FIELD_SCORES = {
     "청년취업": {"VNM": 94, "IDN": 83, "MNG": 84},
 }
 
+# 3. 최근 5년 협력 신호 시범 추세
 SIGNAL_HISTORY = {
     "VNM": [48, 59, 68, 79, 91],
     "IDN": [43, 55, 66, 76, 90],
     "MNG": [46, 53, 64, 72, 84],
 }
 
+# 4. 국가별 협력 프로젝트와 추천·주의 정보
 PROJECTS = {
     "VNM": {
         "title": "K-Skill Bridge",
@@ -48,6 +52,7 @@ PROJECTS = {
     },
 }
 
+# 5. 국가별 핵심 근거 시범 데이터
 EVIDENCE = {
     "VNM": [
         ("KOICA", "교육·디지털 분야 협력사업 흐름", "개발협력 수요"),
@@ -66,6 +71,7 @@ EVIDENCE = {
     ],
 }
 
+# 6. 공공데이터 제공기관 원문 주소
 SOURCE_LINKS = {
     "외교부 Open Data": "https://opendata.mofa.go.kr/lod/",
     "KOICA": "https://www.koica.go.kr/koica_kr/index.do",
@@ -73,6 +79,7 @@ SOURCE_LINKS = {
     "해외안전여행": "https://www.0404.go.kr/",
 }
 
+# 7. 공공데이터 제공기관별 활용 목적 설명
 SOURCE_DESCRIPTIONS = {
     "외교부 Open Data": "외교일지, 보도자료, 국가·기관·사건 관계와 SPARQL 데이터를 확인합니다.",
     "KOICA": "국가별 개발협력 사업과 교육·보건·기후·디지털 분야 수요를 확인합니다.",

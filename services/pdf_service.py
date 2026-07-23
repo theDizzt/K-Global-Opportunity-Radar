@@ -1,4 +1,6 @@
+# 0. 모듈 불러오기
 from io import BytesIO
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -9,13 +11,16 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from config.constants import PROJECTS
 
+# 1. 분석 API 응답으로 한글 PDF 전략 검토안 생성
+def make_report_pdf(result):
+    # 1.1. 보고서에 반복해서 사용하는 분석 항목 분리
+    country = result["country"]
+    analysis = result["analysis"]
+    status = result["data_status"]
+    risks = result["risks"]
 
-def make_report_pdf(row, persona, field, score):
-    def pdf_safe(value):
-        return str(value).replace("·", "-").replace("→", "->")
-
+    # 1.2. PDF 문서와 한글 글꼴 설정
     buffer = BytesIO()
     pdfmetrics.registerFont(UnicodeCIDFont("HYSMyeongJo-Medium"))
     document = SimpleDocTemplate(
@@ -27,6 +32,7 @@ def make_report_pdf(row, persona, field, score):
         bottomMargin=15 * mm,
     )
 
+    # 1.3. 제목, 소제목, 본문 스타일 설정
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         "KTitle",
@@ -56,16 +62,20 @@ def make_report_pdf(row, persona, field, score):
         textColor=colors.HexColor("#273B4D"),
     )
 
-    project = PROJECTS[row.iso3]
+    # 1.4. 표와 본문에 들어갈 보고서 내용 구성
+    risk_level = risks[0]["level"] if risks else "확인 필요"
     story = [
         Paragraph("K-Global Opportunity Radar", title_style),
-        Paragraph(f"{row.country} {pdf_safe(field)} 분야 초기 사업 검토안", title_style),
+        Paragraph(
+            f"{escape(country['name'])} {escape(analysis['field'])} 분야 초기 사업 검토안",
+            title_style,
+        ),
         Spacer(1, 5 * mm),
     ]
     summary_data = [
-        ["사용자", pdf_safe(persona), "분석 분야", pdf_safe(field)],
-        ["기회점수", f"{score:.1f} / 100", "데이터 신뢰도", f"{row.completeness}%"],
-        ["안전 주의지표", row.risk_level, "기준일", row.updated],
+        ["사용자", analysis["persona"], "분석 분야", analysis["field"]],
+        ["기회점수", f"{analysis['score']:.1f} / 100", "데이터 신뢰도", f"{status['completeness']}%"],
+        ["안전 주의지표", risk_level, "기준일", status["reference_date"]],
     ]
     summary_table = Table(summary_data, colWidths=[25 * mm, 55 * mm, 30 * mm, 52 * mm])
     summary_table.setStyle(
@@ -85,23 +95,21 @@ def make_report_pdf(row, persona, field, score):
     story += [
         summary_table,
         Paragraph("AI 종합 해석", heading_style),
-        Paragraph(pdf_safe(project["summary"]), body_style),
+        Paragraph(escape(result["interpretation"]), body_style),
         Paragraph("추천 협력 모델", heading_style),
-        Paragraph(" / ".join(project["models"]), body_style),
+        Paragraph(" / ".join(map(escape, result["recommendations"])), body_style),
         Paragraph("협력 파트너 유형", heading_style),
-        Paragraph(pdf_safe(project["partners"]), body_style),
+        Paragraph(escape(result["partner_types"]), body_style),
         Paragraph("ESG-SDGs 연결", heading_style),
-        Paragraph(pdf_safe(project["sdgs"]), body_style),
+        Paragraph(escape(result["sdgs"]), body_style),
         Paragraph("주의 요인", heading_style),
-        Paragraph(" / ".join(project["cautions"]), body_style),
+        Paragraph(" / ".join(escape(risk["title"]) for risk in risks), body_style),
         Paragraph("근거 데이터와 한계", heading_style),
-        Paragraph(
-            "외교부 Open Data, KOICA, KF 데이터포털, 해외안전여행 데이터를 국가 단위로 결합한 시연용 정제 데이터입니다. 실제 사업 결정 전 최신 원문과 현지 정보를 다시 확인해야 합니다.",
-            body_style,
-        ),
+        Paragraph(escape(status["notice"]), body_style),
         Spacer(1, 4 * mm),
         Paragraph("DEMO - 추가 확인과 내부 논의를 위한 초기 초안", body_style),
     ]
 
+    # 1.5. 문서를 메모리에서 생성하여 다운로드용 바이트 반환
     document.build(story)
     return buffer.getvalue()

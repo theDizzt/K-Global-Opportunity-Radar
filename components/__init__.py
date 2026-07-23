@@ -1,2 +1,4 @@
-"""Reusable Streamlit UI components."""
+"""재사용 가능한 Streamlit UI 구성요소."""
+
+# 0. 화면에서 반복 사용하는 UI 구성요소를 패키지로 묶습니다.
 
