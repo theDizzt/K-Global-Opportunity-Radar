@@ -31,8 +31,10 @@ def apply_animation_variant():
         .model-row, .warning-tag, .source-card {{
             animation-name: fade-refresh-{variant};
         }}
+        .landing-hero h1, .landing-hero > p, .landing-metrics,
         .page-hero-title, .page-hero-copy, .headline, .subline,
-        [data-testid="stSelectbox"], .analysis-meta, .comparison-summary,
+        [data-testid="stSelectbox"], [data-testid="stPills"],
+        .analysis-meta, .comparison-summary,
         .st-key-compare_chart_panel .panel-title, [data-testid="stAlert"] {{
             animation-name: page-refresh-{variant};
         }}
