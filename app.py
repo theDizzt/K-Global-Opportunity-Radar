@@ -5,7 +5,7 @@
 import streamlit as st
 
 from components.animations import apply_animation_variant, initialize_animation_state
-from components.header import show_header
+from components.header import show_footer, show_header
 from components.styles import set_page_style
 from config.settings import PAGE_CONFIG
 from services.data_service import load_countries, load_options
@@ -40,6 +40,9 @@ def main():
         show_compare_page(data, options)
     elif menu == "근거 데이터":
         show_source_details()
+
+    # 2.4. 현재 메뉴 아래에 공통 서비스 정보 표시
+    show_footer()
 
 
 # 3. 파일을 직접 실행했을 때 애플리케이션 시작

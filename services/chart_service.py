@@ -11,7 +11,7 @@ def make_gauge_chart(score):
             sort=False,
             direction="clockwise",
             rotation=90,
-            marker=dict(colors=["#079c9b", "#e7edf3"], line=dict(width=0)),
+            marker=dict(colors=["#2f8df4", "#223247"], line=dict(width=0)),
             textinfo="none",
             hoverinfo="skip",
         )
@@ -21,7 +21,7 @@ def make_gauge_chart(score):
         x=0.5,
         y=0.5,
         showarrow=False,
-        font=dict(size=32, color="#0a2949", family="Cafe24ProSlim, Pretendard, sans-serif"),
+        font=dict(size=32, color="#f4f8fd", family="Cafe24ProSlim, Pretendard, sans-serif"),
     )
     chart.update_layout(
         height=230,
@@ -48,8 +48,8 @@ def make_signal_chart(trend):
             mode="lines+markers+text",
             text=values,
             textposition="top center",
-            line=dict(color="#079c9b", width=3),
-            marker=dict(size=9, color="#ffffff", line=dict(color="#079c9b", width=3)),
+            line=dict(color="#2787ef", width=3),
+            marker=dict(size=9, color="#ffffff", line=dict(color="#2787ef", width=3)),
             hovertemplate="%{x}년 · %{y}점<extra></extra>",
         )
     )
@@ -79,7 +79,7 @@ def make_compare_chart(compare_data):
             orientation="h",
             text=compare_data["score"].map(lambda value: f"{value:.1f}"),
             textposition="outside",
-            marker=dict(color=["#b7dfe0", "#54bcbc", "#087f9e"]),
+            marker=dict(color=["#9fc9f7", "#5aa5f2", "#237fdf"]),
             hovertemplate="%{y} · %{x:.1f}점<extra></extra>",
         )
     )

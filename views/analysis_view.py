@@ -17,57 +17,74 @@ from views.source_view import show_source_details
 
 # 1. 국가, 분석 분야, 사용자 유형 선택 영역 구성
 def show_analysis_controls(data, options):
-    title_column, country_column, field_column, persona_column = st.columns(
-        [3.35, 1, 1, 1.15],
-        vertical_alignment="bottom",
+    st.markdown(
+        """
+        <section class="page-hero">
+            <div class="hero-grid"></div>
+            <span class="page-kicker"><i></i> AI 기반 글로벌 협력 인텔리전스</span>
+            <h1 class="page-hero-title">국가 협력 기회를<br><strong>데이터로 발견하다</strong></h1>
+            <p class="page-hero-copy">
+                외교 공공데이터의 정책·교류·사업 신호를 연결해<br>
+                실행 가능한 협력 우선순위와 근거를 제안합니다.
+            </p>
+        </section>
+        """,
+        unsafe_allow_html=True,
     )
 
-    with country_column:
-        st.markdown('<div class="control-label">▣ 분석 대상 국가</div>', unsafe_allow_html=True)
-        country = st.selectbox(
-            "분석 대상 국가",
-            data["country"].tolist(),
-            index=0,
-            label_visibility="collapsed",
-            key="analysis_country",
-            on_change=restart_animations,
+    # 1.1. 분석 조건을 하나의 검색 패널 안에서 입력
+    with st.container(key="analysis_controls"):
+        st.markdown(
+            '<div class="control-heading"><span>ANALYSIS QUERY</span>'
+            '<b>분석 조건을 선택하세요</b></div>',
+            unsafe_allow_html=True,
         )
+        country_column, field_column, persona_column = st.columns(3)
 
-    with field_column:
-        st.markdown('<div class="control-label">◇ 분석 분야</div>', unsafe_allow_html=True)
-        field = st.selectbox(
-            "분석 분야",
-            options["fields"],
-            index=0,
-            label_visibility="collapsed",
-            key="analysis_field",
-            on_change=restart_animations,
-        )
+        with country_column:
+            st.markdown('<div class="control-label">01 · 분석 대상 국가</div>', unsafe_allow_html=True)
+            country = st.selectbox(
+                "분석 대상 국가",
+                data["country"].tolist(),
+                index=0,
+                label_visibility="collapsed",
+                key="analysis_country",
+                on_change=restart_animations,
+            )
 
-    with persona_column:
-        st.markdown('<div class="control-label">◎ 사용자 유형</div>', unsafe_allow_html=True)
-        persona = st.selectbox(
-            "사용자 유형",
-            options["personas"],
-            index=0,
-            label_visibility="collapsed",
-            key="analysis_persona",
-            on_change=restart_animations,
-        )
+        with field_column:
+            st.markdown('<div class="control-label">02 · 분석 분야</div>', unsafe_allow_html=True)
+            field = st.selectbox(
+                "분석 분야",
+                options["fields"],
+                index=0,
+                label_visibility="collapsed",
+                key="analysis_field",
+                on_change=restart_animations,
+            )
+
+        with persona_column:
+            st.markdown('<div class="control-label">03 · 사용자 유형</div>', unsafe_allow_html=True)
+            persona = st.selectbox(
+                "사용자 유형",
+                options["personas"],
+                index=0,
+                label_visibility="collapsed",
+                key="analysis_persona",
+                on_change=restart_animations,
+            )
 
     row = data[data["country"] == country].iloc[0]
-    with title_column:
-        st.markdown(
-            '<div class="headline">'
-            f'<span>{country}</span><span>{field} 분야</span><span>협력기회 분석</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<div class="subline">분석 기준일&nbsp; {row.updated.replace("-", ".")} '
-            f'&nbsp;·&nbsp; 데이터 신뢰도&nbsp; <strong>{row.completeness}%</strong></div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        f"""
+        <div class="analysis-meta">
+            <div><small>TARGET COUNTRY</small><strong>{country}</strong><span>{row.iso3}</span></div>
+            <div><small>FOCUS SECTOR</small><strong>{field}</strong><span>우선 분석 분야</span></div>
+            <div><small>DATA CONFIDENCE</small><strong>{row.completeness}%</strong><span>{row.updated.replace("-", ".")} 기준</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     return row, field, persona
 
@@ -78,18 +95,32 @@ def show_analysis_page(data, options):
     row, field, persona = show_analysis_controls(data, options)
     analysis, _ = load_analysis(row.iso3, persona, field)
     score = analysis["analysis"]["score"]
+    st.markdown(
+        f"""
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">PRIORITY OPPORTUNITY</span>
+                <h2>{analysis["country"]["name"]} · {field} 협력 인사이트</h2>
+                <p>기회 적합도와 실행 조건을 현재 수집 가능한 근거로 정리했습니다.</p>
+            </div>
+            <span class="analysis-badge">AI SCORE · {score:.1f}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     main_column, side_column = st.columns([2.45, 1], gap="medium")
 
     # 2.2. 점수, 추세, 핵심 근거 영역 표시
     with main_column:
-        with st.container(border=True, height=280, key="score_panel"):
+        with st.container(border=False, height=300, key="score_panel"):
             show_score_panel(score, analysis["analysis"]["score_level"], analysis["metrics"])
 
         chart_column, evidence_column = st.columns([1, 1], gap="medium")
         with chart_column:
-            with st.container(border=True, height=350, key="signal_panel"):
+            with st.container(border=False, height=360, key="signal_panel"):
                 st.markdown(
-                    '<div class="panel-title"><span class="panel-icon">⌁</span>최근 5년 협력 신호</div>',
+                    '<div class="panel-title"><span class="panel-icon">⌁</span>'
+                    '<span>최근 5년 협력 신호<small>COOPERATION SIGNAL</small></span></div>',
                     unsafe_allow_html=True,
                 )
                 st.plotly_chart(
@@ -104,16 +135,16 @@ def show_analysis_page(data, options):
                 )
 
         with evidence_column:
-            with st.container(border=True, height=350, key="evidence_panel"):
+            with st.container(border=False, height=360, key="evidence_panel"):
                 show_evidence_panel(analysis["evidence"])
 
     # 2.3. 종합 해석, 추천 모델, 주의 요인 영역 표시
     with side_column:
-        with st.container(border=True, height=168, key="ai_summary_panel"):
+        with st.container(border=False, height=195, key="ai_summary_panel"):
             show_ai_summary(analysis["country"]["name"], analysis["interpretation"])
-        with st.container(border=True, height=312, key="model_panel"):
+        with st.container(border=False, height=292, key="model_panel"):
             show_model_panel(analysis["recommendations"])
-        with st.container(border=True, height=134, key="warning_panel"):
+        with st.container(border=False, height=156, key="warning_panel"):
             show_warning_panel(analysis["risks"])
 
     # 2.4. 근거 화면 이동과 PDF 다운로드 기능 제공
