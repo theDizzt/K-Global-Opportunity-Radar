@@ -136,6 +136,11 @@ SOURCE_CATALOG = (
     ("MOFA_INSIGHT", "외교부", "MOFA 인사이트", "website/reference only", None,
      "https://insight.mofa.go.kr/", "수시", "reference_only",
      "별도 공개 API·재이용 약관 확인 전 화면 자동수집 금지; underlying LOD/API 우선 사용"),
+    ("OECD_CRS", "OECD", "Creditor Reporting System activity-level data",
+     "official bulk text/parquet download", None,
+     "https://data-explorer.oecd.org/vis?df%5Bag%5D=OECD.DCD.FSD&df%5Bid%5D=DSD_CRS%40DF_CRS",
+     "연간", "approved",
+     "한국 공여 활동을 필터링해 KOICA 누락 교차검증 및 장기 사업 라벨로 사용"),
 )
 
 

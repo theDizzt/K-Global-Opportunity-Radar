@@ -6,6 +6,7 @@ data/*.db
 .spreadsheet_work/
 data/*.sqlite*
 outputs/
+data/oecd/
 
 
 .env
