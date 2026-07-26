@@ -1,4 +1,6 @@
 # 0. 모듈 불러오기
+from html import escape
+
 import pandas as pd
 import streamlit as st
 
@@ -7,7 +9,39 @@ from services.chart_service import make_compare_chart
 from services.data_service import load_analysis
 
 
-# 1. 동일 조건으로 국가별 기회점수 비교 화면 구성
+# 1. 비교 결과를 테마에 따라 색상이 바뀌는 고정 높이 표로 표시
+def _show_comparison_table(rows):
+    columns = (
+        "국가",
+        "기회점수",
+        "수요성",
+        "정책 정합성",
+        "한국 연계기반",
+        "실행 준비도",
+        "데이터 신뢰도",
+        "주의지표",
+    )
+    header_html = "".join(f"<th>{escape(column)}</th>" for column in columns)
+    row_html = "".join(
+        "<tr>"
+        + "".join(f"<td>{escape(str(row[column]))}</td>" for column in columns)
+        + "</tr>"
+        for row in rows
+    )
+    st.markdown(
+        f"""
+        <div class="comparison-table-wrap">
+            <table class="comparison-table">
+                <thead><tr>{header_html}</tr></thead>
+                <tbody>{row_html}</tbody>
+            </table>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# 2. 동일 조건으로 국가별 기회점수 비교 화면 구성
 def show_compare_page(data, options):
     st.markdown(
         """
@@ -75,9 +109,9 @@ def show_compare_page(data, options):
     st.markdown(
         f"""
         <div class="comparison-summary">
-            <article><small>TOP OPPORTUNITY</small><strong>{top_country["국가"]}</strong><span>{top_country["기회점수"]:.1f}점</span></article>
-            <article><small>AVERAGE SCORE</small><strong>{average_score:.1f}</strong><span>{field} 분야</span></article>
-            <article><small>ANALYZED MARKETS</small><strong>{len(ranked_rows)}</strong><span>협력 후보국</span></article>
+            <article><small>TOP OPPORTUNITY</small><strong class="summary-country">{top_country["국가"]}</strong><span class="summary-score">{top_country["기회점수"]:.1f}점</span></article>
+            <article><small>AVERAGE SCORE</small><strong class="summary-number">{average_score:.1f}</strong><span>{field} 분야</span></article>
+            <article><small>ANALYZED MARKETS</small><strong class="summary-number">{len(ranked_rows)}</strong><span>협력 후보국</span></article>
         </div>
         """,
         unsafe_allow_html=True,
@@ -91,7 +125,10 @@ def show_compare_page(data, options):
             unsafe_allow_html=True,
         )
         st.plotly_chart(
-            make_compare_chart(pd.DataFrame(chart_rows)),
+            make_compare_chart(
+                pd.DataFrame(chart_rows),
+                dark_mode=st.session_state.get("dark_mode", False),
+            ),
             width="stretch",
             config={"displayModeBar": False},
             key="country_comparison",
@@ -103,4 +140,4 @@ def show_compare_page(data, options):
         '<h2>세부지표 비교</h2></div></div>',
         unsafe_allow_html=True,
     )
-    st.dataframe(pd.DataFrame(compare_rows), width="stretch", hide_index=True)
+    _show_comparison_table(ranked_rows)

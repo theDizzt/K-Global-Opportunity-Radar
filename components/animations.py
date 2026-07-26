@@ -33,7 +33,7 @@ def apply_animation_variant():
         }}
         .landing-hero h1, .landing-hero > p, .landing-metrics,
         .page-hero-title, .page-hero-copy, .headline, .subline,
-        [data-testid="stSelectbox"], [data-testid="stPills"],
+        [data-testid="stSelectbox"], [data-testid="stRadio"],
         .analysis-meta, .comparison-summary,
         .st-key-compare_chart_panel .panel-title, [data-testid="stAlert"] {{
             animation-name: page-refresh-{variant};

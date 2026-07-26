@@ -22,9 +22,16 @@ def show_header():
     if "active_menu" not in st.session_state:
         st.session_state["active_menu"] = "기회 탐색"
 
+    # 2.1. CSS가 화면 전체의 테마 상태를 안정적으로 인식하도록 숨김 표식 추가
+    theme_name = "dark" if st.session_state["dark_mode"] else "light"
+    st.markdown(
+        f'<span class="theme-state theme-{theme_name}" aria-hidden="true"></span>',
+        unsafe_allow_html=True,
+    )
+
     with st.container(key="site_header"):
         brand_column, menu_column, action_column = st.columns(
-            [1.2, 1.15, 0.75],
+            [1.12, 1.2, 0.78],
             vertical_alignment="center",
         )
         with brand_column:
@@ -62,7 +69,7 @@ def show_header():
             )
             with theme_column:
                 st.button(
-                    "◔",
+                    "◐",
                     key="theme_toggle",
                     help="화면 테마 전환",
                     on_click=_toggle_theme,
@@ -75,20 +82,6 @@ def show_header():
                     width="stretch",
                     type="primary",
                 )
-
-    # 2.1. 테마 버튼을 누르면 공통 디자인 토큰을 다크 모드 값으로 교체
-    if st.session_state["dark_mode"]:
-        st.markdown(
-            """
-            <style>
-            :root {
-                --background:#08111d; --surface:#0d1826; --surface-soft:#111e2d;
-                --text:#edf3fa; --muted:#98a8ba; --line:#233247;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
 
     return st.session_state["active_menu"], report_clicked
 

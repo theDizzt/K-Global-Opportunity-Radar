@@ -216,10 +216,12 @@ def show_analysis_page(data, options):
     with st.container(key="opportunity_filters"):
         field_column, persona_column = st.columns([1.6, 1])
         with field_column:
-            field = st.pills(
+            # 같은 항목을 다시 눌러도 선택이 해제되지 않는 필수 단일 선택 메뉴
+            field = st.radio(
                 "분석 분야",
                 options["fields"],
-                default=options["fields"][0],
+                index=0,
+                horizontal=True,
                 key="opportunity_field",
                 on_change=restart_animations,
             )
