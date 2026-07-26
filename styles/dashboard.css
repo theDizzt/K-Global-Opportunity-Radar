@@ -22,8 +22,8 @@
 
 @font-face {
     font-family: 'Cafe24ProSlim';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Light.woff2') format('woff2');
-    font-weight: 300;
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Bold.woff2') format('woff2');
+    font-weight: 700;
     font-display: swap;
 }
 
@@ -93,7 +93,7 @@ html, body, [class*="css"], .stApp,
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: auto; }
 .theme-state,
 div[data-testid="stElementContainer"]:has(.theme-state) { display: none !important; }
 .stApp {
@@ -198,11 +198,6 @@ body:has(.theme-dark) [data-testid="stDialog"] button {
     font-weight: 700 !important;
     white-space: nowrap;
     box-shadow: none !important;
-    transition:
-        color .18s ease,
-        background .18s ease,
-        border-color .18s ease,
-        box-shadow .18s ease;
 }
 
 [class*="st-key-nav_"] button p,
@@ -580,7 +575,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     font-weight: 700;
     line-height: 1;
     letter-spacing: -.05em;
-    animation: score-refresh-a .38s cubic-bezier(.2,.75,.25,1) both;
 }
 
 .score-level {
@@ -592,10 +586,62 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     background: rgba(39,135,239,.12);
     font-size: .9rem;
     font-weight: 800;
-    animation: fade-refresh-a .34s ease-out .05s both;
 }
 
-/* 8. 세부 평가지표 막대 */
+/* 8. 원형 점수와 세부 평가지표 막대 */
+@property --chart-progress {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+}
+
+.gauge-chart {
+    --gauge-score: 0;
+    --chart-target: var(--gauge-score);
+    width: min(210px, 100%);
+    aspect-ratio: 1;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    position: relative;
+    border-radius: 50%;
+    background:
+        conic-gradient(
+            from -90deg,
+            #2f8df4 calc(var(--chart-progress) * 1%),
+            #223247 0
+        );
+    animation: circle-fill-a .9s cubic-bezier(.2,.75,.25,1) both;
+}
+
+.gauge-chart::before {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    background: #0f1c2b;
+}
+
+.gauge-center {
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    color: #f4f8fd;
+}
+
+.gauge-center strong {
+    font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif !important;
+    font-size: 2.4rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.gauge-center span {
+    margin-top: .35rem;
+    color: #b7c5d5;
+    font-size: 1rem;
+}
+
 .metric-item {
     display: grid;
     grid-template-columns: 32px 125px 1fr 46px;
@@ -603,12 +649,8 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     gap: 10px;
     min-height: 54px;
     border-bottom: 1px solid rgba(255,255,255,.08);
-    animation: fade-refresh-a .32s ease-out both;
 }
 
-.metric-item:nth-child(2) { animation-delay: .06s; }
-.metric-item:nth-child(3) { animation-delay: .12s; }
-.metric-item:nth-child(4) { animation-delay: .18s; }
 .metric-item:last-child { border-bottom: 0; }
 .metric-icon {
     width: 30px;
@@ -630,7 +672,7 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 .metric-fill {
     height: 100%;
     transform-origin: left center;
-    animation: bar-refresh-a .55s cubic-bezier(.2,.75,.25,1) both;
+    animation: bar-fill-a .8s cubic-bezier(.2,.75,.25,1) both;
 }
 
 .metric-fill.blue { background: var(--blue); box-shadow: 0 0 9px rgba(39,135,239,.55); }
@@ -653,7 +695,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
         var(--navy);
 }
 
-.ai-card { animation: fade-refresh-a .36s ease-out both; }
 .ai-heading {
     display: flex;
     align-items: center;
@@ -688,13 +729,10 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     border-radius: 5px;
     color: var(--row-text);
     background: var(--row-bg);
-    animation: fade-refresh-a .34s ease-out both;
 }
 
 .evidence-row b,
 .model-row b { font-size: .9rem; }
-.evidence-row:nth-of-type(3), .model-row:nth-of-type(3) { animation-delay: .06s; }
-.evidence-row:nth-of-type(4), .model-row:nth-of-type(4) { animation-delay: .12s; }
 .evidence-symbol,
 .model-number {
     width: 29px;
@@ -732,7 +770,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     color: #bb6111;
     background: var(--warning-bg);
     font-size: .84rem;
-    animation: fade-refresh-a .34s ease-out .08s both;
 }
 
 .caption { color: var(--muted); font-size: .84rem; }
@@ -847,12 +884,9 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     border-radius: 6px;
     background: var(--surface);
     box-shadow: 0 9px 26px rgba(20,43,76,.05);
-    animation: fade-refresh-a .36s ease-out both;
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
 .source-card:hover {
-    transform: translateY(-3px);
     border-color: rgba(39,135,239,.45);
     box-shadow: 0 16px 34px rgba(20,43,76,.1);
 }
@@ -868,9 +902,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
 }
-.st-key-source_cards [data-testid="stColumn"]:nth-child(2) .source-card { animation-delay: .06s; }
-.st-key-source_cards [data-testid="stColumn"]:nth-child(3) .source-card { animation-delay: .12s; }
-.st-key-source_cards [data-testid="stColumn"]:nth-child(4) .source-card { animation-delay: .18s; }
 [data-testid="stAlert"] { margin-top: 1rem; border-radius: 5px; }
 
 /* 12. 하단 실행 버튼과 서비스 정보 */
@@ -911,76 +942,57 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 .footer-brand .brand-mark { width: 24px; height: 24px; font-size: .84rem; }
 .site-footer p { margin: 0 auto 0 0; }
 
-/* 13. 입력값 갱신에 따른 애니메이션 */
-[data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
-    animation: chart-refresh-a .45s cubic-bezier(.2,.75,.25,1) both;
-    will-change: opacity, transform, filter;
+/* 13. 막대·원형 그래프에만 적용하는 0% 시작 채움 효과 */
+.metric-fill,
+.card-metric em,
+.confidence-card i,
+.st-key-compare_chart_panel [data-testid="stPlotlyChart"] .barlayer .point path {
+    transform-origin: left center;
+    transform-box: fill-box;
+    animation: bar-fill-a .8s cubic-bezier(.2,.75,.25,1) both;
+    will-change: transform;
 }
 
-.score-number, .score-level, .metric-item, .metric-fill, .ai-card,
-.evidence-row, .model-row, .warning-tag, .source-card {
-    will-change: opacity, transform;
+.gauge-chart,
+.score-ring {
+    animation: circle-fill-a .9s cubic-bezier(.2,.75,.25,1) both;
+    will-change: --chart-progress;
 }
 
-.page-hero-title, .page-hero-copy, .headline, .subline,
-[data-testid="stSelectbox"], .analysis-meta, .comparison-summary,
-.st-key-compare_chart_panel .panel-title, [data-testid="stAlert"] {
-    animation: page-refresh-a .38s cubic-bezier(.2,.75,.25,1) both;
-    will-change: opacity, transform;
+@keyframes bar-fill-a {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
 }
 
-@keyframes score-refresh-a {
-    from { opacity: .3; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes bar-fill-b {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
 }
-@keyframes score-refresh-b {
-    from { opacity: .3; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+
+@keyframes circle-fill-a {
+    from { --chart-progress: 0; }
+    to { --chart-progress: var(--chart-target); }
 }
-@keyframes bar-refresh-a {
-    from { transform: scaleX(.65); opacity: .45; }
-    to { transform: scaleX(1); opacity: 1; }
-}
-@keyframes bar-refresh-b {
-    from { transform: scaleX(.65); opacity: .45; }
-    to { transform: scaleX(1); opacity: 1; }
-}
-@keyframes fade-refresh-a {
-    from { opacity: .35; transform: translateY(7px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fade-refresh-b {
-    from { opacity: .35; transform: translateY(7px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes chart-refresh-a {
-    from { opacity: .25; filter: blur(1.5px); transform: translateY(5px); }
-    to { opacity: 1; filter: blur(0); transform: translateY(0); }
-}
-@keyframes chart-refresh-b {
-    from { opacity: .25; filter: blur(1.5px); transform: translateY(5px); }
-    to { opacity: 1; filter: blur(0); transform: translateY(0); }
-}
-@keyframes page-refresh-a {
-    from { opacity: .2; transform: translateY(7px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes page-refresh-b {
-    from { opacity: .2; transform: translateY(7px); }
-    to { opacity: 1; transform: translateY(0); }
+
+@keyframes circle-fill-b {
+    from { --chart-progress: 0; }
+    to { --chart-progress: var(--chart-target); }
 }
 
 /* 14. 움직임 최소화 접근성 설정 */
 @media (prefers-reduced-motion: reduce) {
-    .score-number, .score-level, .metric-item, .metric-fill, .ai-card,
-    .evidence-row, .model-row, .warning-tag, .source-card,
-    .page-hero-title, .page-hero-copy, .headline, .subline,
-    [data-testid="stSelectbox"], .analysis-meta, .comparison-summary,
-    .st-key-compare_chart_panel .panel-title, [data-testid="stAlert"],
-    [data-testid="stPlotlyChart"], [data-testid="stDataFrame"] {
+    .metric-fill,
+    .card-metric em,
+    .confidence-card i,
+    .st-key-compare_chart_panel [data-testid="stPlotlyChart"] .barlayer .point path,
+    .gauge-chart,
+    .score-ring,
+    .radar-line {
         animation: none !important;
-        transition: none !important;
     }
+
+    .gauge-chart,
+    .score-ring { --chart-progress: var(--chart-target); }
 }
 
 /* 15. 태블릿과 모바일 화면 대응 */
@@ -1106,7 +1118,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     font-size: .86rem;
     font-weight: 800;
     text-decoration: none !important;
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
 .primary-link {
@@ -1118,7 +1129,7 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 
 .ghost-link { border: 1px solid var(--line); color: var(--text) !important; background: var(--surface); }
 .primary-link:hover,
-.ghost-link:hover { transform: translateY(-2px); border-color: var(--blue); }
+.ghost-link:hover { border-color: var(--blue); }
 
 .landing-metrics {
     min-height: 140px;
@@ -1157,8 +1168,8 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     letter-spacing: -.04em;
 }
 
-.landing-metrics span { align-self: end; padding-bottom: 3px; color: var(--text); font-size: .88rem; font-weight: 700; }
-.landing-metrics p { grid-column: 1 / -1; margin: .45rem 0 0; color: var(--muted); font-size: .84rem; }
+.landing-metrics span { align-self: end; padding-bottom: 3px; color: var(--text); font-size: .96rem; font-weight: 700; }
+.landing-metrics p { grid-column: 1 / -1; margin: .45rem 0 0; color: var(--muted); font-size: .96rem; }
 
 /* 17. 분야 필터와 우선 협력 기회 카드 */
 .st-key-opportunity_filters {
@@ -1212,7 +1223,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     border-radius: 4px;
     color: var(--text);
     background: var(--control-bg);
-    transition: border-color .18s ease, background .18s ease, color .18s ease;
 }
 
 .st-key-opportunity_filters [data-testid="stRadio"] label:hover {
@@ -1268,18 +1278,13 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     color: #ffffff;
     background: linear-gradient(148deg, #111d2c, #08111d);
     box-shadow: 0 18px 42px rgba(9,20,34,.16);
-    animation: card-in .52s ease both;
-    transition: transform .24s ease, border-color .24s ease, box-shadow .24s ease;
 }
 
 [class*="st-key-opportunity_card_"]:hover {
-    transform: translateY(-5px);
     border-color: #35506e;
     box-shadow: 0 26px 58px rgba(9,20,34,.22);
 }
 
-.st-key-opportunity_card_1 { animation-delay: .08s; }
-.st-key-opportunity_card_2 { animation-delay: .16s; }
 .opportunity-card {
     --accent:#f0505b;
     height: 342px;
@@ -1315,6 +1320,7 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 .change { color: var(--accent); font-size: .86rem; font-weight: 800; }
 .score-ring {
     --score: 80;
+    --chart-target: var(--score);
     width: 82px;
     height: 82px;
     padding: 3px;
@@ -1322,8 +1328,9 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     top: 45px;
     right: 0;
     border-radius: 50%;
-    background: conic-gradient(var(--accent) calc(var(--score) * 1%), #203044 0);
+    background: conic-gradient(var(--accent) calc(var(--chart-progress) * 1%), #203044 0);
     filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 30%, transparent));
+    animation: circle-fill-a .9s cubic-bezier(.2,.75,.25,1) both;
 }
 
 .score-ring::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #0c1725; }
@@ -1358,7 +1365,14 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 .card-metric span { display: flex; justify-content: space-between; margin-bottom: .28rem; color: #9badc2; font-size: .84rem; }
 .card-metric b { color: #aebdce; }
 .card-metric i { height: 3px; display: block; overflow: hidden; background: #203045; }
-.card-metric em { height: 100%; display: block; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.card-metric em {
+    height: 100%;
+    display: block;
+    transform-origin: left center;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: bar-fill-a .8s cubic-bezier(.2,.75,.25,1) both;
+}
 
 [class*="st-key-opportunity_card_"] div[data-testid="stButton"] button {
     height: 44px;
@@ -1385,11 +1399,6 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
     background: var(--surface);
     font-size: .84rem;
     font-weight: 700;
-}
-
-@keyframes card-in {
-    from { opacity:0; transform:translateY(14px); }
-    to { opacity:1; transform:translateY(0); }
 }
 
 /* 18. 의사결정 신호 맵 */
@@ -1522,7 +1531,13 @@ div[data-testid="stSelectbox"] [data-baseweb="select"] * {
 .confidence-card span { color: #9eb0c4; font-size: .84rem; }
 .confidence-card strong { float: right; color: #5aaaff; font-family: 'Cafe24ProSlim', 'Pretendard', sans-serif !important; font-size: 1.05rem; font-weight: 300; }
 .confidence-card > div { clear: both; height: 3px; margin-top: .5rem; overflow: hidden; background: #26384c; }
-.confidence-card i { height: 100%; display: block; background: #3d9fff; }
+.confidence-card i {
+    height: 100%;
+    display: block;
+    transform-origin: left center;
+    background: #3d9fff;
+    animation: bar-fill-a .8s cubic-bezier(.2,.75,.25,1) both;
+}
 
 /* 19. 랜딩 방법론과 상세 팝업 */
 .method-section { padding: 7.5rem 0 6.5rem; text-align: center; }

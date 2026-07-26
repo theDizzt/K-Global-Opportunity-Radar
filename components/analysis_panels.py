@@ -3,8 +3,6 @@ from html import escape
 
 import streamlit as st
 
-from services.chart_service import make_gauge_chart
-
 
 # 1. 세부 평가지표별 색상과 아이콘 설정
 METRIC_STYLES = {
@@ -32,11 +30,24 @@ def show_score_panel(score, score_level, metrics):
         st.markdown(f'<span class="score-level">{escape(score_level)}</span>', unsafe_allow_html=True)
 
     with gauge_column:
-        st.plotly_chart(
-            make_gauge_chart(score),
-            width="stretch",
-            config={"displayModeBar": False},
-            key="opportunity_gauge",
+        st.markdown(
+            f"""
+            <div
+                class="gauge-chart"
+                style="--gauge-score:{score}"
+                role="progressbar"
+                aria-label="협력기회 점수"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{score:.1f}"
+            >
+                <div class="gauge-center">
+                    <strong>{score:.1f}</strong>
+                    <span>/ 100</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
     with metric_column:
