@@ -24,8 +24,8 @@ MOFA_COLLECTION_LIMIT = int(os.getenv("MOFA_COLLECTION_LIMIT", "100"))
 
 # 4. Streamlit 페이지 기본 설정
 PAGE_CONFIG = {
-    "page_title": "외교협력 기회 레이더",
-    "page_icon": "🌐",
+    "page_title": "K-Global Opportunity Radar",
+    "page_icon": "✦",
     "layout": "wide",
     "initial_sidebar_state": "collapsed",
 }
