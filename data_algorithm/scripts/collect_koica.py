@@ -17,8 +17,13 @@ parser.add_argument("--from-year", type=int, default=1991)
 parser.add_argument("--to-year", type=int, default=date.today().year)
 parser.add_argument("--page-size", type=int, default=10)
 parser.add_argument("--project-type", action="append", help="Repeat to collect selected KOICA project types")
-parser.add_argument("--min-request-interval", type=float, default=3.0)
+parser.add_argument("--min-request-interval", type=float, default=5.0)
 parser.add_argument("--max-retries", type=int, default=3)
+parser.add_argument(
+    "--list-only",
+    action="store_true",
+    help="Store list-level projects without calling the currently unstable detail endpoint",
+)
 args = parser.parse_args()
 
 load_env()
@@ -35,6 +40,7 @@ counts = collector.collect(
     years=range(args.from_year, args.to_year + 1),
     page_size=args.page_size,
     project_types=tuple(args.project_type) if args.project_type else PROJECT_TYPES,
+    fetch_details=not args.list_only,
 )
 print(json.dumps({"database": db_path, "countries": counts, "total": sum(counts.values())}, ensure_ascii=False, indent=2))
 conn.close()

@@ -34,8 +34,14 @@
 | 품질 | 가용 출처 기준 데이터 충족률 |
 
 Tier A는 승인·조달·시행약정, Tier B는 MOU·타당성조사·실무협의,
-Tier C는 회담·대사관 활동·보도 언급으로 정의한다. 현재 원문에는 대부분
-Tier C만 존재하므로 Tier A/B의 통계적 효과는 아직 검증할 수 없다.
+Tier C는 회담·대사관 활동·보도 언급으로 정의한다. 일반 문서에서 강한 실행
+문구가 검출된 사례는 `policy_evidence_classification`에 `review_required`로
+격리한다. 서로 다른 두 검토자가 모두 승인하기 전에는 특징량과 정책점수에서
+제외하며, 검토자 간 Cohen's kappa를 함께 기록한다.
+
+국가·분야·사건유형을 공식 원문에서 직접 확인한 최근 문서 4개는 별도의 검증
+파일로 관리하며 8개 국가·분야 Tier A/B 근거로 적재했다. 다만 표본과 출처
+유형이 아직 작으므로 정책 신호의 미래 사업 예측력은 검증 완료로 간주하지 않는다.
 
 ## 비교 모형
 
@@ -123,9 +129,17 @@ python scripts\import_oda_activities.py ".\data\oecd\CRS 2024 data.zip" `
 `DERecipientcode`를 ISO3로 사용하며, 다른 원본에 ISO3가 없으면 `raw_code`,
 `raw_name`, `iso3` 열을 가진 매핑 파일을 제공한다.
 
+## KOICA와 OECD의 역할 분리
+
+KOICA 목록 사업은 `project_master`에 보존하지만 OECD CRS가 적재된 DB에서는 통계
+결과 라벨과 최근 사업 수에 KOICA를 중복 합산하지 않는다. 두 출처가 같은 ODA 사업을
+서로 다른 ID와 언어로 제공할 수 있기 때문이다. 현재는 OECD CRS를 국가 간 비교와
+시간 검증의 기준으로 사용하고, KOICA는 원문 근거와 향후 상세 메타데이터 보강용으로
+사용한다. OECD CRS가 없는 DB에서는 KOICA가 결과 데이터의 대체 출처가 된다.
+
 ## 다음 검증 조건
 
-- KOICA 직접 API가 정상화되면 OECD CRS와 프로젝트 ID·예산·기간 교차검증
+- KOICA 상세 API가 정상화되면 OECD CRS와 프로젝트 ID·예산·기간 교차검증
 - OECD CRS 2010~2018 파일 추가로 더 긴 rolling backtest 구성
 - LOD·MOFA를 검증 대상 국가 전체에 수집해 미수집과 사건 없음 구분
 - MOU·타당성조사·공동위원회 등 Tier B 사건을 수작업 표본 라벨링

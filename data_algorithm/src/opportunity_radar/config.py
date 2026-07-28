@@ -4,9 +4,34 @@ import os
 from pathlib import Path
 
 
-def load_env(path: str | Path = ".env", *, override: bool = False) -> dict[str, str]:
+def find_env_file(start: str | Path | None = None) -> Path | None:
+    """Find the nearest .env from the runtime or installed source tree.
+
+    Data scripts are commonly launched from either the repository root or the
+    ``data_algorithm`` directory.  Searching both locations prevents the
+    selected service key from silently depending on the caller's working
+    directory.
+    """
+    roots = [Path(start).resolve() if start is not None else Path.cwd().resolve()]
+    roots.append(Path(__file__).resolve().parent)
+    seen: set[Path] = set()
+    for root in roots:
+        candidates = (root, *root.parents)
+        for directory in candidates:
+            if directory in seen:
+                continue
+            seen.add(directory)
+            candidate = directory / ".env"
+            if candidate.is_file():
+                return candidate
+    return None
+
+
+def load_env(path: str | Path | None = None, *, override: bool = False) -> dict[str, str]:
     """Load a simple KEY=VALUE file without adding a runtime dependency."""
-    env_path = Path(path)
+    env_path = Path(path) if path is not None else find_env_file()
+    if env_path is None:
+        return {}
     loaded: dict[str, str] = {}
     if not env_path.exists():
         return loaded

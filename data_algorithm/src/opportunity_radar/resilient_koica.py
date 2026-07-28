@@ -16,6 +16,7 @@ class ResilientKoicaCollector(KoicaCollector):
         years: Iterable[int] = range(1991, date.today().year + 1),
         project_types: Iterable[str] = PROJECT_TYPES,
         page_size: int = 100,
+        fetch_details: bool = True,
     ) -> dict[str, int]:
         years = tuple(years)
         project_types = tuple(project_types)
@@ -24,7 +25,15 @@ class ResilientKoicaCollector(KoicaCollector):
         cursor = self.conn.execute(
             "INSERT INTO ingestion_run(source_type, started_at, status, parameters_json) "
             "VALUES ('KOICA', ?, 'running', ?)",
-            (_now(), json.dumps({"years": years, "project_types": project_types, "page_size": page_size})),
+            (
+                _now(),
+                json.dumps({
+                    "years": years,
+                    "project_types": project_types,
+                    "page_size": page_size,
+                    "fetch_details": fetch_details,
+                }),
+            ),
         )
         run_id = cursor.lastrowid
         self.conn.commit()
@@ -36,22 +45,33 @@ class ResilientKoicaCollector(KoicaCollector):
             for project_type in project_types:
                 try:
                     for item in self._list_items(run_id, year, project_type, page_size):
-                        iso3 = _country_iso3(item.get("NATION_NM", ""))
+                        iso3 = _country_iso3(
+                            item.get("NATION_NM", ""),
+                            item.get("NATION_CD"),
+                        )
                         project_no = item.get("BSNS_NO", "")
                         if not iso3 or not project_no or project_no in seen:
                             continue
-                        try:
-                            detail, statuses = self._detail(run_id, project_no)
-                            stored_country = self._upsert_project(item, detail, statuses)
-                        except Exception as exc:
-                            self._record_failure(
-                                run_id, year, project_type, exc, project_no=project_no
-                            )
-                            errors.append({
-                                "year": year, "project_type": project_type,
-                                "project_no": project_no, "error": str(exc)[:300],
-                            })
-                            continue
+                        if fetch_details:
+                            try:
+                                detail, statuses = self._detail(run_id, project_no)
+                            except Exception as exc:
+                                self._record_failure(
+                                    run_id, year, project_type, exc, project_no=project_no
+                                )
+                                errors.append({
+                                    "year": year, "project_type": project_type,
+                                    "project_no": project_no, "error": str(exc)[:300],
+                                })
+                                # The provider's detail endpoint can return
+                                # RESULT_CODE 99 even when the corresponding list
+                                # endpoint succeeds. Preserve the list-level project.
+                                detail = {"DETAIL_FETCH_ERROR": str(exc)[:300]}
+                                statuses = []
+                        else:
+                            detail = {"DETAIL_FETCH_SKIPPED": "list_only_mode"}
+                            statuses = []
+                        stored_country = self._upsert_project(item, detail, statuses)
                         seen.add(project_no)
                         counts[stored_country] += 1
                         self.conn.commit()

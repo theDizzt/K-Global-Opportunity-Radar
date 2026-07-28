@@ -18,9 +18,21 @@ from .taxonomy_v2 import classify_sector
 BASE_URL = "https://apis.data.go.kr/B260003/BsnsService"
 PROJECT_TYPES = ("0102", "07", "09", "04", "12")
 TARGET_COUNTRIES = {
-    "VNM": {"iso2": "VN", "name_ko": "베트남", "name_en": "Vietnam", "region_code": "SEA", "aliases": ("베트남", "Vietnam")},
-    "IDN": {"iso2": "ID", "name_ko": "인도네시아", "name_en": "Indonesia", "region_code": "SEA", "aliases": ("인도네시아", "Indonesia")},
-    "MNG": {"iso2": "MN", "name_ko": "몽골", "name_en": "Mongolia", "region_code": "NEA", "aliases": ("몽골", "Mongolia")},
+    "VNM": {
+        "iso2": "VN", "name_ko": "베트남", "name_en": "Vietnam",
+        "region_code": "SEA", "aliases": ("베트남", "Vietnam"),
+        "nation_codes": ("1775",),
+    },
+    "IDN": {
+        "iso2": "ID", "name_ko": "인도네시아", "name_en": "Indonesia",
+        "region_code": "SEA", "aliases": ("인도네시아", "Indonesia"),
+        "nation_codes": ("1385",),
+    },
+    "MNG": {
+        "iso2": "MN", "name_ko": "몽골", "name_en": "Mongolia",
+        "region_code": "NEA", "aliases": ("몽골", "Mongolia"),
+        "nation_codes": ("1514",),
+    },
 }
 
 KOICA_SCHEMA = """
@@ -103,9 +115,12 @@ def _as_float(value: str | None) -> float | None:
         return None
 
 
-def _country_iso3(name: str) -> str | None:
+def _country_iso3(name: str, nation_code: str | None = None) -> str | None:
     folded = name.casefold()
+    normalized_code = str(nation_code or "").strip()
     for iso3, config in TARGET_COUNTRIES.items():
+        if normalized_code and normalized_code in config["nation_codes"]:
+            return iso3
         if any(alias.casefold() in folded for alias in config["aliases"]):
             return iso3
     return None
@@ -159,7 +174,11 @@ class KoicaCollector:
         self.transport = transport or self._default_transport
         self.sleeper = sleeper
         self.max_retries = max_retries
-        self.min_request_interval = 3.0 if min_request_interval is None and is_live_transport else float(min_request_interval or 0)
+        self.min_request_interval = (
+            5.0
+            if min_request_interval is None and is_live_transport
+            else float(min_request_interval or 0)
+        )
         self.retry_base_seconds = retry_base_seconds
         self.retry_jitter_seconds = 0.75 if retry_jitter_seconds is None and is_live_transport else float(retry_jitter_seconds or 0)
         self.monotonic = monotonic
@@ -169,8 +188,15 @@ class KoicaCollector:
 
     @staticmethod
     def _default_transport(url: str) -> bytes:
+        request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "KGlobalOpportunityRadar/0.1",
+                "Accept": "application/xml",
+            },
+        )
         try:
-            with urllib.request.urlopen(url, timeout=60) as response:
+            with urllib.request.urlopen(request, timeout=30) as response:
                 return response.read()
         except urllib.error.HTTPError as exc:
             if exc.code == 401:
@@ -278,7 +304,7 @@ class KoicaCollector:
 
     def _upsert_project(self, list_item: dict[str, str], detail: dict[str, str], statuses: list[str]) -> str:
         country_name = list_item.get("NATION_NM") or detail.get("RECIPCONTY_NM", "")
-        iso3 = _country_iso3(country_name)
+        iso3 = _country_iso3(country_name, list_item.get("NATION_CD"))
         if not iso3:
             raise ValueError(f"Unsupported target country: {country_name}")
         project_no = list_item.get("BSNS_NO") or detail.get("BSNS_NO")
@@ -366,7 +392,10 @@ class KoicaCollector:
             for year in years:
                 for project_type in project_types:
                     for item in self._list_items(run_id, year, project_type, page_size):
-                        iso3 = _country_iso3(item.get("NATION_NM", ""))
+                        iso3 = _country_iso3(
+                            item.get("NATION_NM", ""),
+                            item.get("NATION_CD"),
+                        )
                         project_no = item.get("BSNS_NO", "")
                         if not iso3 or not project_no or project_no in seen:
                             continue

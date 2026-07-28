@@ -81,6 +81,35 @@ class StatisticalSignalsTest(unittest.TestCase):
         self.assertEqual(row_2012["outcome_new_project"], 0)
         self.assertEqual(row_2012["prior_project_count_3y"], 1)
 
+    def test_oecd_outcomes_take_precedence_over_koica_to_avoid_double_counting(self):
+        for source, uid in (("OECD_CRS", "OECD-1"), ("KOICA", "KOICA-1")):
+            self.conn.execute(
+                """INSERT INTO project_master(
+                       project_uid, source_type, source_project_id, country_iso3,
+                       sector_code, title, start_year, is_new
+                   ) VALUES (?, ?, ?, 'VNM', 'education', ?, 2022, 1)""",
+                (uid, source, uid, uid),
+            )
+        self.conn.commit()
+
+        build_signal_panel(
+            self.conn,
+            horizon_years=2,
+            start_year=2020,
+            outcome_cutoff_year=2022,
+            countries=["VNM"],
+            sectors=["education"],
+        )
+
+        row = self.conn.execute(
+            """SELECT outcome_new_project, outcome_project_count
+               FROM cooperation_signal_panel
+               WHERE country_iso3='VNM' AND sector_code='education'
+                 AND snapshot_year=2020 AND horizon_years=2"""
+        ).fetchone()
+        self.assertEqual(row["outcome_new_project"], 1)
+        self.assertEqual(row["outcome_project_count"], 1)
+
     def test_chronological_validation_records_baseline_comparison(self):
         ensure_signal_schema(self.conn)
         for year in range(2000, 2024):

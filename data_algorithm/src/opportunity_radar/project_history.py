@@ -222,8 +222,11 @@ def _number(value: str) -> float | None:
         return None
 
 
-def _sector_from_activity(row: dict[str, str]) -> tuple[str | None, float]:
-    purpose = _find_value(row, "purpose_code")
+def sector_from_purpose(
+    purpose: str,
+    text: str = "",
+) -> tuple[str | None, float]:
+    """Map an OECD CRS purpose code, with text fallback, to the shared taxonomy."""
     digits = re.sub(r"\D", "", purpose)
     code = int(digits[:5]) if len(digits) >= 5 else int(digits[:3]) if len(digits) >= 3 else None
     if code is not None:
@@ -233,14 +236,23 @@ def _sector_from_activity(row: dict[str, str]) -> tuple[str | None, float]:
             return "health", 0.9
         if 31100 <= code <= 31399 or 311 <= code <= 313:
             return "agriculture", 0.9
-        if 14000 <= code <= 14999 or 23000 <= code <= 23999 or 41000 <= code <= 41999:
+        if (
+            14000 <= code <= 14999
+            or 23000 <= code <= 23999
+            or 41000 <= code <= 41999
+            or code in {140, 230, 410}
+        ):
             return "climate_environment", 0.85
-        if 22000 <= code <= 22999:
+        if 22000 <= code <= 22999 or code == 220:
             return "digital", 0.8
+    return classify_sector(text)
+
+
+def _sector_from_activity(row: dict[str, str]) -> tuple[str | None, float]:
     text = " ".join(
         (_find_value(row, "title"), _find_value(row, "description"), _find_value(row, "purpose_name"))
     )
-    return classify_sector(text)
+    return sector_from_purpose(_find_value(row, "purpose_code"), text)
 
 
 def _read_country_map(path: str | Path | None) -> dict[str, str]:

@@ -199,6 +199,21 @@ def _organizations(rows: Iterable[sqlite3.Row]) -> set[str]:
     return values
 
 
+def _project_outcome_filter(conn: sqlite3.Connection) -> str:
+    """Return a SQL suffix that prevents OECD/KOICA double counting.
+
+    OECD CRS is the cross-country outcome source used for validation. KOICA is
+    retained in ``project_master`` as richer evidence, and becomes the fallback
+    outcome source only when OECD CRS activities are absent.
+    """
+    has_oecd = bool(
+        conn.execute(
+            "SELECT EXISTS(SELECT 1 FROM project_master WHERE source_type='OECD_CRS')"
+        ).fetchone()[0]
+    )
+    return " AND source_type<>'KOICA'" if has_oecd else ""
+
+
 def build_signal_panel(
     conn: sqlite3.Connection,
     *,
@@ -218,11 +233,14 @@ def build_signal_panel(
     ensure_signal_schema(conn)
     project_counts = sync_internal_projects(conn)
     signal_counts = sync_signal_events(conn)
+    outcome_filter = _project_outcome_filter(conn)
 
     source_years = [
         row[0]
         for row in conn.execute(
-            "SELECT start_year FROM project_master WHERE is_new=1 UNION SELECT event_year FROM signal_event"
+            f"""SELECT start_year FROM project_master
+                WHERE is_new=1 {outcome_filter}
+                UNION SELECT event_year FROM signal_event"""
         )
         if row[0] is not None
     ]
@@ -236,7 +254,10 @@ def build_signal_panel(
         raise ValueError("Not enough historical years for the requested horizon")
 
     country_values = tuple(countries or [
-        row[0] for row in conn.execute("SELECT DISTINCT country_iso3 FROM project_master ORDER BY 1")
+        row[0] for row in conn.execute(
+            f"""SELECT DISTINCT country_iso3 FROM project_master
+                WHERE is_new=1 {outcome_filter} ORDER BY 1"""
+        )
     ])
     sector_values = tuple(sectors or SECTORS.keys())
     conn.execute("DELETE FROM cooperation_signal_panel WHERE horizon_years=?", (horizon_years,))
@@ -246,9 +267,10 @@ def build_signal_panel(
     for country in country_values:
         for sector in sector_values:
             all_projects = conn.execute(
-                """SELECT start_year, COALESCE(commitment_amount, 0) AS amount
+                f"""SELECT start_year, COALESCE(commitment_amount, 0) AS amount
                    FROM project_master
                    WHERE country_iso3=? AND sector_code=? AND is_new=1
+                     {outcome_filter}
                    ORDER BY start_year""",
                 (country, sector),
             ).fetchall()
@@ -614,6 +636,19 @@ def validate_signals(
     source_counts = dict(
         conn.execute("SELECT source_type, COUNT(*) FROM project_master GROUP BY source_type").fetchall()
     )
+    outcome_filter = _project_outcome_filter(conn)
+    outcome_source_counts = dict(
+        conn.execute(
+            f"""SELECT source_type, COUNT(*) FROM project_master
+                WHERE is_new=1 {outcome_filter} GROUP BY source_type"""
+        ).fetchall()
+    )
+    if source_counts.get("KOICA") and source_counts.get("OECD_CRS"):
+        caveats.append(
+            "KOICA projects are retained as evidence but excluded from outcome counts "
+            "because OECD CRS is the authoritative ODA outcome source and cross-source "
+            "record linkage is not yet complete."
+        )
     if not source_counts.get("KOICA") and not source_counts.get("OECD_CRS"):
         caveats.append(
             "Outcome labels currently contain KF public-diplomacy projects only; KOICA/OECD ODA labels are absent."
@@ -664,6 +699,7 @@ def validate_signals(
         "horizon_years": horizon_years,
         "test_start_year": split_year,
         "project_sources": source_counts,
+        "outcome_project_sources": outcome_source_counts,
         "metrics": metrics,
         "coefficients": coefficients_json,
         "caveats": caveats,
@@ -726,6 +762,7 @@ def predict_current_candidates(
         item["code"]: item["name_ko"]
         for item in conn.execute("SELECT code, name_ko FROM sector WHERE enabled=1")
     }
+    outcome_filter = _project_outcome_filter(conn)
     candidates: list[dict] = []
     panel_rows = conn.execute(
         """SELECT country_iso3, sector_code, outcome_new_project
@@ -760,8 +797,9 @@ def predict_current_candidates(
                 for item in signal_rows
             )
             project_rows = conn.execute(
-                """SELECT start_year FROM project_master
+                f"""SELECT start_year FROM project_master
                    WHERE country_iso3=? AND sector_code=? AND is_new=1
+                     {outcome_filter}
                      AND start_year<=? ORDER BY start_year""",
                 (country, sector, target_year),
             ).fetchall()
