@@ -17,7 +17,8 @@
 
 ## 웹폰트
 
-`styles/dashboard.css`는 다음 폰트를 저장소에 포함하지 않고 jsDelivr CDN에서 실행 시점에 불러옵니다.
+`styles/dashboard.css`는 다음 폰트를 저장소에 포함하지 않고 jsDelivr CDN에서
+실행 시점에 불러옵니다.
 
 ### Pretendard
 
@@ -26,13 +27,6 @@
 - 공식 프로젝트와 라이선스: [orioncactus/pretendard](https://github.com/orioncactus/pretendard/blob/main/LICENSE)
 - 런타임 배포 미러: [projectnoonnu/pretendard](https://github.com/projectnoonnu/pretendard)
 - 사용 굵기: Thin(100), Regular(400), Medium(500), Bold(700), ExtraBold(800)
-
-### Cafe24 PRO Slim Bold
-
-- 저작권: Cafe24 Corp.
-- 이용 조건: 개인·기업 사용자를 포함한 모든 사용자에게 무료이며 상업적 사용이 가능합니다. 폰트 파일 자체의 유료 판매는 금지됩니다.
-- 공식 안내: [Cafe24 무료폰트](https://fonts.cafe24.com/), [Cafe24 도움말](https://help.cafe24.com/faq/web-hosting/introduce/new-renewal-change/cafe24_free_fonts_usage/)
-- 런타임 배포 미러: [projectnoonnu/2511-1](https://github.com/projectnoonnu/2511-1)
 
 폰트 파일을 저장소에 직접 포함하거나 수정본을 재배포할 때에는 각 폰트의 최신 원문 조건과 고지 의무를 다시 확인해야 합니다.
 

@@ -12,7 +12,7 @@ def show_source_details(sources=None):
         sources, _ = load_sources()
     st.markdown(
         """
-        <section class="subpage-hero">
+        <section class="subpage-hero source-page-hero">
             <span class="page-kicker"><i></i> OPEN METHODOLOGY</span>
             <h1 class="headline">설명 가능한 분석,<br>검증 가능한 판단</h1>
             <p class="subline">추천에 사용한 기관별 데이터와 원문 확인 경로를 투명하게 공개합니다.</p>
@@ -24,7 +24,7 @@ def show_source_details(sources=None):
     # 1.1. 데이터 처리 과정을 세 단계 방법론 카드로 설명
     st.markdown(
         """
-        <div class="method-grid">
+        <div class="method-grid source-method-grid">
             <article><span>01</span><strong>신호 수집</strong><p>외교·개발협력 공개데이터를 국가와 분야 기준으로 수집합니다.</p></article>
             <article><span>02</span><strong>관계 분석</strong><p>정책·교류·사업 신호의 연결 강도와 시점을 비교합니다.</p></article>
             <article><span>03</span><strong>근거 검토</strong><p>AI 추천과 함께 원문 출처와 데이터 상태를 확인합니다.</p></article>
