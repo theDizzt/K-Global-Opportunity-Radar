@@ -5,7 +5,7 @@
 현재 구현 범위:
 
 - SQLite 원천/표준/근거/점수 계층
-- 교육, 직업훈련, 보건, 농업·기후, 한국학·문화 5개 분야
+- 교육, 직업훈련, 보건, 농업, 기후·환경, 디지털, 문화·콘텐츠, 한국학 8개 분야
 - KOICA 프로젝트 기반 수요·수행기반 산출
 - LOD/MOFA 이벤트의 시간감쇠 기반 외교 정합성 산출
 - KF 한국학·한류 기반 산출
@@ -53,13 +53,37 @@ python -m unittest discover -s tests -v
 
 정규화는 현재 비교군의 10~90백분위를 기준으로 합니다. 실서비스에서는 화면에 3개국만 표시하더라도 KOICA 전체 수원국 또는 권역 전체를 정규화 모집단으로 적재해야 합니다.
 
-## 실제 데이터 연결
+## 실제 데이터 수집
+
+프로젝트 루트에서 통합 수집기를 실행합니다.
+
+```powershell
+.\scripts\collect_real_data.ps1
+```
+
+인증키 없이 외교부 LOD와 KF 글로벌 e-스쿨 공식 공개 표를 수집합니다.
+수집 결과는 `data/radar_real.db`, 실행 상태는
+`outputs/collection_report.json`에 저장됩니다. 동일 자료를 다시 실행해도
+안정 해시와 고유키를 사용하므로 원천 및 구조화 레코드가 중복되지 않습니다.
+
+2026-07-27 검증 결과:
+
+- 외교부 LOD: 베트남 209건, 인도네시아 217건, 몽골 75건
+- KF 글로벌 e-스쿨: 베트남 265건, 인도네시아 123건, 몽골 62건
+
+### 공공데이터포털 인증 출처
+
+루트 `.env`의 `DATA_GO_KR_SERVICE_KEY`에 일반 인증키를 입력하면 KF·MOFA·KOICA
+REST API도 같은 명령에서 수집합니다. 인증키가 없으면 해당 출처만 건너뜁니다.
 
 ### KOICA
 
+연도와 사업유형별 오류를 격리하는 `ResilientKoicaCollector`가 공식 API의 목록과
+상세 자료를 `project` 데이터 계약으로 적재합니다.
+
 공공데이터포털의 `한국국제협력단_사업정보조회(15158394)`를 사용합니다. Base
 URL은 `https://apis.data.go.kr/B260003/BsnsService`이며, 디코딩 키를
-`KOICA_SERVICE_KEY`에 저장하면 됩니다. 실제 XML 목록 응답은 `project`와
+`DATA_GO_KR_SERVICE_KEY` 또는 `KOICA_SERVICE_KEY`에 저장하면 됩니다. 실제 XML 목록 응답은 `project`와
 `source_record`에 매핑되며 원문도 `raw_api_response`에 보존됩니다.
 
 현재 상세조회 API는 정상 목록의 사업번호와 공식 가이드의 예제 사업번호 모두에
@@ -70,7 +94,9 @@ URL은 `https://apis.data.go.kr/B260003/BsnsService`이며, 디코딩 키를
 
 ### KF
 
-KF 해외대학 한국학 과정 CSV는 `load_kf_academic_csv()`로 적재할 수 있습니다. 국가명→ISO3 매핑을 명시적으로 넘겨야 합니다.
+KF 글로벌 e-스쿨 자료는 공식 공개 표에서 자동 수집합니다. 해외대학 한국학
+현황 엑셀은 공식 파일을 `data/raw/kf_korean_studies.xlsx`에 둔 경우 추가
+적재합니다.
 
 ### 외교부 LOD / MOFA
 
@@ -90,12 +116,14 @@ LLM에는 이미 계산된 점수와 조회된 근거만 전달합니다. LLM은
 
 ## 다음 실데이터 작업
 
-1. KOICA 상세조회 API `RESULT_CODE=99` 정상화 여부 재점검
-2. OECD CRS와 KOICA 사업의 교차출처 레코드 연결
-3. KF 한국학·한류 원자료 범위 확대
-4. LOD·MOFA 수집 국가를 검증 모집단 전체로 확대
-5. World Bank 136개 비교국의 다중지표 수요점수에 전문가 타당성 평가 연결
-6. 협력 연속성·미충족 수요·전체 공여국 포화도를 분리한 추천 화면 연결
+1. 공공데이터포털 일반 인증키를 발급하고 KF·MOFA·KOICA REST 자료 수집
+2. KOICA 상세조회 API `RESULT_CODE=99` 정상화 여부 재점검
+3. OECD CRS와 KOICA 사업의 교차출처 레코드 연결
+4. KF 해외대학 한국학·한류 공식 원자료 범위 확대
+5. LOD·MOFA 수집 국가와 정규화 기준 모집단을 최소 10개국 이상으로 확대
+6. World Bank 비교국의 다중지표 수요점수에 전문가 타당성 평가 연결
+7. 실제 원천 자료로 분석 뷰와 점수 스냅샷 재생성
+8. 검증된 점수와 협력 연속성·미충족 수요·공여국 포화도 모델을 백엔드 및 추천 화면에 연결
 
 협력 기회 모델의 산식, 실제 적재 결과와 한계는
 [`docs/OPPORTUNITY_MODELS.md`](docs/OPPORTUNITY_MODELS.md)에 정리되어 있습니다.

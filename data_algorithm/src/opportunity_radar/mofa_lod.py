@@ -17,6 +17,7 @@ from .ingest import _coverage, _source_record
 from .public_api import IngestionRun, now_utc
 
 
+# 1. 외교부 LOD에서 수집할 공식 SPARQL 데이터셋
 LOD_DATASETS = {
     "mofapress": "http://opendata.mofa.go.kr/mofapress/sparql",
     "mofabrief": "http://opendata.mofa.go.kr/mofabrief/sparql",
@@ -24,10 +25,12 @@ LOD_DATASETS = {
 }
 
 
+# 2. 사용자 입력 별칭을 안전한 SPARQL 문자열로 변환
 def _sparql_string(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
+# 3. 여러 RDF 속성 중 제목·날짜 후보에 맞는 첫 값 조회
 def _first(values: dict[str, list[str]], tokens: tuple[str, ...]) -> str | None:
     for predicate, items in values.items():
         lowered = predicate.casefold()
@@ -36,6 +39,7 @@ def _first(values: dict[str, list[str]], tokens: tuple[str, ...]) -> str | None:
     return None
 
 
+# 4. RDF 문자열에서 날짜를 찾아 YYYY-MM-DD 형식으로 표준화
 def _date_value(values: dict[str, list[str]]) -> str | None:
     raw = _first(values, ("date", "year", "created", "issued", "writ"))
     if not raw:
@@ -53,6 +57,7 @@ def _date_value(values: dict[str, list[str]]) -> str | None:
         return None
 
 
+# 5. 3개 시범국의 외교 문서를 검색하고 원문·근거로 적재
 class MofaLodCollector:
     def __init__(
         self,
@@ -71,6 +76,7 @@ class MofaLodCollector:
 
     @staticmethod
     def _default_transport(url: str) -> bytes:
+        # 공식 엔드포인트에서 JSON 결과를 받도록 명시하고 호출 주체를 표시합니다.
         request = urllib.request.Request(
             url, headers={"Accept": "application/json", "User-Agent": "OpportunityRadar/0.1"}
         )
@@ -78,6 +84,7 @@ class MofaLodCollector:
             return response.read()
 
     def _query(self, run_id: int, dataset: str, endpoint: str, query: str, page: int) -> list[dict]:
+        # 일시적인 서버 오류만 지수 백오프로 재시도하고 원본 JSON은 그대로 보존합니다.
         url = endpoint + "?" + urllib.parse.urlencode({"query": query, "format": "json"})
         body: bytes | None = None
         for attempt in range(self.max_retries + 1):
@@ -108,6 +115,7 @@ class MofaLodCollector:
 
     @staticmethod
     def _build_query(dataset: str, aliases: tuple[str, ...], page_size: int, offset: int) -> str:
+        # 국가 한글·영문 별칭이 포함된 문서 URI를 먼저 찾은 후 리터럴 속성을 조회합니다.
         prefix = f"http://opendata.mofa.go.kr/{dataset}/resource/"
         alias_filter = " || ".join(
             f'CONTAINS(LCASE(STR(?matched)), LCASE("{_sparql_string(alias)}"))' for alias in aliases
@@ -125,6 +133,7 @@ SELECT ?s ?p ?o WHERE {{
 """.strip()
 
     def _store_rows(self, iso3: str, dataset: str, rows: list[dict]) -> int:
+        # SPARQL 행을 문서 URI 단위로 묶어 중복 없는 원문 레코드와 분야 근거를 생성합니다.
         grouped: dict[str, dict[str, list[str]]] = {}
         for row in rows:
             subject = row.get("s", {}).get("value")
@@ -165,6 +174,7 @@ SELECT ?s ?p ?o WHERE {{
         return stored
 
     def collect(self, *, page_size: int = 100, max_pages: int | None = 10) -> dict[str, int]:
+        # 국가×데이터셋별 페이지를 순회하고 국가별 수집 충족도를 함께 갱신합니다.
         upsert_target_countries(self.conn)
         run = IngestionRun(
             self.conn, "LOD",

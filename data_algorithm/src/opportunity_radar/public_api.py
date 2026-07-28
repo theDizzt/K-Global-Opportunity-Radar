@@ -11,6 +11,7 @@ from collections.abc import Callable, Iterator
 from datetime import datetime, timezone
 
 
+# 1. 수집 실행 이력과 원본 API 응답을 보존하는 공통 스키마
 INGESTION_SCHEMA = """
 CREATE TABLE IF NOT EXISTS ingestion_run (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,19 +39,23 @@ CREATE TABLE IF NOT EXISTS raw_api_response (
 """
 
 
+# 2. 모든 수집 시각을 UTC ISO 형식으로 통일
 def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# 3. 수집 이력 테이블이 없는 데이터베이스를 안전하게 초기화
 def ensure_ingestion_schema(conn: sqlite3.Connection) -> None:
     conn.executescript(INGESTION_SCHEMA)
     conn.commit()
 
 
+# 4. 공공데이터포털 응답 오류를 호출 코드와 구분하기 위한 예외
 class PublicApiError(RuntimeError):
     pass
 
 
+# 5. 인증·재시도·페이지네이션·원문 보존을 담당하는 공통 API 클라이언트
 class DataGoKrClient:
     """Small JSON client that preserves every successful source response."""
 
@@ -74,6 +79,7 @@ class DataGoKrClient:
 
     @staticmethod
     def _default_transport(url: str) -> bytes:
+        # 공식 API가 호출 주체를 식별할 수 있도록 서비스 User-Agent를 전달합니다.
         request = urllib.request.Request(url, headers={"User-Agent": "OpportunityRadar/0.1"})
         with urllib.request.urlopen(request, timeout=60) as response:
             return response.read()
@@ -87,6 +93,7 @@ class DataGoKrClient:
         *,
         page_no: int | None = None,
     ) -> dict:
+        # 빈 값은 요청에서 제외하고 인증키를 디코딩한 상태로 한 번만 인코딩합니다.
         safe_params = {key: str(value) for key, value in params.items() if value is not None}
         query = urllib.parse.urlencode({"serviceKey": self.service_key, "returnType": "JSON", **safe_params})
         url = f"{endpoint}?{query}"
@@ -111,6 +118,7 @@ class DataGoKrClient:
                 self.sleeper(min(2**attempt, 8))
         assert body is not None
         text = body.decode("utf-8", "replace")
+        # 같은 실행에서 동일 요청이 중복 저장되지 않도록 URL 매개변수를 해시합니다.
         fingerprint = hashlib.sha256(
             json.dumps({"endpoint": endpoint, "params": safe_params}, sort_keys=True).encode()
         ).hexdigest()
@@ -141,6 +149,7 @@ class DataGoKrClient:
         page_size: int = 100,
         max_pages: int | None = None,
     ) -> Iterator[dict]:
+        # 전체 건수와 현재 페이지 크기를 함께 확인해 마지막 페이지를 판별합니다.
         page = 1
         while True:
             payload = self.call(
@@ -164,6 +173,7 @@ class DataGoKrClient:
             page += 1
 
 
+# 6. 수집 성공·실패·건수를 하나의 실행 단위로 기록
 class IngestionRun:
     def __init__(self, conn: sqlite3.Connection, source_type: str, parameters: dict):
         self.conn = conn

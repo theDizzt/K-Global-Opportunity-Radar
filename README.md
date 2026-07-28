@@ -2,6 +2,9 @@
 
 외교부·KOICA·KF 공공데이터를 국가 단위로 연결해 협력 후보국과 프로젝트 초안을 제안하는 Streamlit MVP입니다.
 
+처음 설치하거나 화면 사용법이 필요한 경우
+[프로그램 사용 설명서](docs/user-guide.md)를 먼저 확인하세요.
+
 ## 개발 환경 구축
 
 ```powershell
@@ -73,6 +76,55 @@ GET /api/v1/countries/VNM/signals?field=교육
 `signals` 응답은 문서 빈도와 자료종류 가중치로 계산한 검증 전 원시지표입니다.
 현재 화면의 최종 기회점수에는 자동 반영되지 않습니다.
 
+## 통합 실제 데이터 수집
+
+데이터·알고리즘 파이프라인에는 외교부 LOD와 KF 글로벌 e-스쿨 공개 자료를
+인증키 없이 수집하는 통합 명령이 준비되어 있습니다.
+
+```powershell
+.\scripts\collect_real_data.ps1
+```
+
+특정 출처만 다시 수집할 수도 있습니다.
+
+```powershell
+.\scripts\collect_real_data.ps1 --sources lod kf_eschool
+```
+
+- 실제 데이터 DB: `data_algorithm/data/radar_real.db`
+- 실행 결과 보고서: `data_algorithm/outputs/collection_report.json`
+- 지원 출처: `lod`, `kf_eschool`, `kf`, `mofa`, `koica`, `kf_academic`
+
+적재 건수, KF 강좌 기간 및 중복 여부는 다음 명령으로 확인합니다.
+
+```powershell
+.\.venv\Scripts\python.exe .\data_algorithm\scripts\inspect_collected_data.py
+```
+
+`kf`, `mofa`, `koica` REST API까지 수집하려면 `.env.example`을 `.env`로
+복사한 뒤 `DATA_GO_KR_SERVICE_KEY`에 공공데이터포털 일반 인증키를 입력합니다.
+키나 KF 공식 원본 파일이 없으면 해당 출처만 `skipped`로 기록되며, 나머지
+수집은 계속됩니다. `--strict`를 지정하면 하나라도 누락되거나 실패할 때
+비정상 종료합니다.
+
+## 자동 데이터 수집
+
+수집, 기존 점수 재계산, FastAPI 운영 DB 동기화를 한 번에 실행할 수 있습니다.
+
+```powershell
+.\scripts\run_auto_collection.ps1 -DryRun
+.\scripts\run_auto_collection.ps1
+```
+
+매일 오전 3시에 실행되는 Windows 예약 작업을 등록합니다.
+
+```powershell
+.\scripts\register_auto_collection_task.ps1 -Frequency Daily -At "03:00"
+```
+
+세부 옵션과 권장 데이터는 [사용 가이드](docs/user-guide.md)와
+[자동 수집 권장 데이터](docs/recommended-data.md)를 확인하세요.
+
 ## 구현 범위
 
 - 다크 내비게이션 기반 상단 메뉴: 기회 탐색 / 핵심 신호 / 분석 방법
@@ -84,7 +136,9 @@ GET /api/v1/countries/VNM/signals?field=교육
 - 공백 기회 기반 프로젝트 제안
 - 한글 1페이지 전략 검토안 PDF 다운로드
 
-현재 국가 수치와 프로젝트 문구는 UI·추천 흐름 검증을 위한 시범 데이터입니다. 운영 단계에서는 데이터 API와 출처 기반 RAG 결과로 교체해야 합니다.
+현재 UI의 국가 점수와 프로젝트 문구는 시범 데이터입니다. 외교부 LOD와 KF
+글로벌 e-스쿨 원천 자료 수집은 연결되었으며, 다음 단계에서 점수 재계산과
+백엔드 운영 DB 동기화를 거쳐 화면 수치로 전환합니다.
 
 ## 코드 구조
 
