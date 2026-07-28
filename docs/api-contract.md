@@ -20,6 +20,7 @@
 | GET | `/api/v1/countries` | 분석 대상 국가 목록 |
 | GET | `/api/v1/countries/{iso3}` | 국가 원시 지표와 기본정보 |
 | POST | `/api/v1/analysis` | 국가·사용자·분야별 분석 결과 |
+| POST | `/api/v1/reports` | 출처 기반 초기 사업 검토안 생성·캐시 |
 | GET | `/api/v1/collection/status` | 외교부 데이터 최근 수집 상태와 적재량 |
 | GET | `/api/v1/countries/{iso3}/data-quality` | 국가별 실제 문서 품질 보고서 |
 | GET | `/api/v1/countries/{iso3}/evidence` | 국가·분야별 수집 원문 목록 |
@@ -94,6 +95,7 @@ CSV와 현재 시범 상수를 다시 적재하려면 `--reset`을 사용합니�
   "evidence": [
     {
       "title": "교육·디지털 분야 협력사업 흐름",
+      "evidence_id": "seed:1",
       "category": "개발협력 수요",
       "source": "KOICA",
       "reference_date": "2026-07-08",
@@ -115,3 +117,27 @@ CSV와 현재 시범 상수를 다시 적재하려면 `--reset`을 사용합니�
 ```
 
 전체 요청·응답 스키마는 서버 실행 후 `/docs`의 OpenAPI 화면에서도 확인할 수 있습니다.
+
+## 초기 사업 검토안 요청
+
+`POST /api/v1/reports`는 `/analysis`와 같은 입력을 받고, 선택 국가·분야에
+연결된 근거 문서가 있을 때만 초기 검토안을 반환합니다. 첫 버전은 생성형 AI를
+호출하지 않는 `rule_based` 모드이며, 동일한 요청과 근거 조합은 SQLite 캐시에서
+재사용합니다. 근거가 없으면 `status`가 `blocked`이고 임의 내용을 생성하지 않습니다.
+
+```json
+{
+  "country_iso3": "VNM",
+  "persona": "대학생 팀",
+  "field": "교육",
+  "capabilities": ["데이터 분석", "에듀테크"]
+}
+```
+
+주요 응답 필드는 다음과 같습니다.
+
+- `status`: `fallback`, `cached`, `generated`, `blocked`
+- `generation_mode`: `rule_based`, `llm`, `none`
+- `request_hash`: 입력·점수·근거가 같을 때 동일한 캐시 식별자
+- `sources`: 검토안에 사용된 근거 ID, 기관명, 기준일, 원문 URL
+- `additional_checks`: 공개자료만으로 확인할 수 없는 후속 검토사항

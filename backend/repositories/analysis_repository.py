@@ -11,6 +11,7 @@ from config.settings import DATABASE_PATH
 # 1.1. 근거 문서와 출처 정보를 전달하는 레코드
 @dataclass(frozen=True)
 class EvidenceRecord:
+    evidence_id: str
     title: str
     category: str
     source: str
@@ -152,7 +153,7 @@ class AnalysisRepository:
         with get_connection(self.database_path) as connection:
             rows = connection.execute(
                 """
-                SELECT e.title, e.category, e.reference_date, e.is_demo,
+                SELECT e.id, e.title, e.category, e.reference_date, e.is_demo,
                        s.name AS source, s.url AS source_url
                 FROM evidence AS e
                 JOIN data_sources AS s ON s.code = e.source_code
@@ -162,6 +163,7 @@ class AnalysisRepository:
             ).fetchall()
         return [
             EvidenceRecord(
+                evidence_id=f"seed:{row['id']}",
                 title=row["title"],
                 category=row["category"],
                 source=row["source"],
@@ -177,7 +179,7 @@ class AnalysisRepository:
         with get_connection(self.database_path) as connection:
             rows = connection.execute(
                 """
-                SELECT d.title, d.primary_field, d.published_date,
+                SELECT d.document_uri, d.title, d.primary_field, d.published_date,
                        d.source_url, d.dataset_code, s.name AS source
                 FROM source_documents AS d
                 JOIN document_countries AS dc ON dc.document_uri = d.document_uri
@@ -199,6 +201,7 @@ class AnalysisRepository:
         }
         return [
             EvidenceRecord(
+                evidence_id=row["document_uri"],
                 title=row["title"],
                 category=f"{dataset_names.get(row['dataset_code'], '외교자료')} · {row['primary_field']}",
                 source=row["source"],

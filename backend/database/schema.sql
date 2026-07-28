@@ -151,7 +151,24 @@ CREATE TABLE IF NOT EXISTS opportunity_scores (
     PRIMARY KEY (country_iso3, field, score_version, as_of_date)
 );
 
--- 15. 국가·근거·문서·점수 조회 성능을 높이는 검색 인덱스
+-- 15. 동일한 분석 조건과 근거로 생성한 초기 사업 검토안 캐시
+CREATE TABLE IF NOT EXISTS ai_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_hash TEXT NOT NULL UNIQUE,
+    country_iso3 TEXT NOT NULL REFERENCES countries(iso3) ON DELETE CASCADE,
+    persona TEXT NOT NULL,
+    field TEXT NOT NULL,
+    capabilities_json TEXT NOT NULL,
+    prompt_version TEXT NOT NULL,
+    generation_mode TEXT NOT NULL CHECK(generation_mode IN ('llm', 'rule_based')),
+    report_status TEXT NOT NULL CHECK(report_status IN ('generated', 'fallback')),
+    evidence_ids_json TEXT NOT NULL,
+    report_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- 16. 국가·근거·문서·점수·보고서 조회 성능을 높이는 검색 인덱스
 CREATE INDEX IF NOT EXISTS idx_countries_region ON countries(region);
 CREATE INDEX IF NOT EXISTS idx_evidence_country ON evidence(country_iso3);
 CREATE INDEX IF NOT EXISTS idx_risks_country ON risk_factors(country_iso3);
@@ -160,3 +177,5 @@ CREATE INDEX IF NOT EXISTS idx_documents_field ON source_documents(primary_field
 CREATE INDEX IF NOT EXISTS idx_document_countries_country ON document_countries(country_iso3);
 CREATE INDEX IF NOT EXISTS idx_opportunity_scores_lookup
     ON opportunity_scores(country_iso3, field, as_of_date DESC);
+CREATE INDEX IF NOT EXISTS idx_ai_reports_country_field
+    ON ai_reports(country_iso3, field, updated_at DESC);

@@ -109,6 +109,46 @@ class ApiTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(signals.json()["formula_version"], "mofa-raw-v1")
         self.assertEqual(missing_field.status_code, 422)
 
+    # 1.12. 근거 기반 초기 검토안과 SQLite 캐시 응답 검증
+    async def test_report_contract_and_cache(self):
+        request = {
+            "country_iso3": "VNM",
+            "persona": "대학생 팀",
+            "field": "교육",
+            "capabilities": ["데이터 분석", "에듀테크"],
+        }
+        first = await self.client.post("/api/v1/reports", json=request)
+        second = await self.client.post("/api/v1/reports", json=request)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        first_result = first.json()
+        second_result = second.json()
+        self.assertIn(first_result["status"], {"fallback", "cached"})
+        self.assertEqual(second_result["status"], "cached")
+        self.assertEqual(first_result["generation_mode"], "rule_based")
+        self.assertEqual(first_result["request_hash"], second_result["request_hash"])
+        self.assertTrue(first_result["sources"])
+        self.assertTrue(
+            all(source["source_url"].startswith("https://") for source in first_result["sources"])
+        )
+        self.assertEqual(
+            len({source["evidence_id"] for source in first_result["sources"]}),
+            len(first_result["sources"]),
+        )
+
+    # 1.13. 지원하지 않는 국가의 보고서 요청은 404 반환
+    async def test_report_unknown_country_returns_404(self):
+        response = await self.client.post(
+            "/api/v1/reports",
+            json={
+                "country_iso3": "USA",
+                "persona": "대학생 팀",
+                "field": "교육",
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+
 
 # 2. 파일을 직접 실행했을 때 테스트 시작
 if __name__ == "__main__":
