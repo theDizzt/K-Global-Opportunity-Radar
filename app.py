@@ -5,7 +5,7 @@
 import streamlit as st
 
 from components.animations import apply_animation_variant, initialize_animation_state
-from components.header import show_header
+from components.header import show_footer, show_header
 from components.styles import set_page_style
 from config.settings import PAGE_CONFIG
 from services.data_service import load_countries, load_options
@@ -31,15 +31,21 @@ def main():
     options, _ = load_options()
 
     # 2.3. 상단 메뉴를 표시하고 선택된 화면 실행
-    menu = show_header()
+    menu, report_clicked = show_header()
     apply_animation_variant()
 
-    if menu == "기회 분석":
+    if report_clicked:
+        st.toast("기회 카드의 상세 인사이트에서 PDF 리포트를 다운로드할 수 있습니다.")
+
+    if menu == "기회 탐색":
         show_analysis_page(data, options)
-    elif menu == "국가 비교":
+    elif menu == "핵심 신호":
         show_compare_page(data, options)
-    elif menu == "근거 데이터":
+    elif menu == "분석 방법":
         show_source_details()
+
+    # 2.4. 현재 메뉴 아래에 공통 서비스 정보 표시
+    show_footer()
 
 
 # 3. 파일을 직접 실행했을 때 애플리케이션 시작
