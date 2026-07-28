@@ -3,9 +3,11 @@ __pycache__/
 .pytest_cache/
 .venv/
 data/*.db
+data/*.db-*
 .spreadsheet_work/
 data/*.sqlite*
 outputs/
+data/oecd/
 
 
 .env

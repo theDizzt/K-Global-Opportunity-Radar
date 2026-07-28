@@ -107,6 +107,24 @@ GET /api/v1/countries/VNM/signals?field=교육
 수집은 계속됩니다. `--strict`를 지정하면 하나라도 누락되거나 실패할 때
 비정상 종료합니다.
 
+## 자동 데이터 수집
+
+수집, 기존 점수 재계산, FastAPI 운영 DB 동기화를 한 번에 실행할 수 있습니다.
+
+```powershell
+.\scripts\run_auto_collection.ps1 -DryRun
+.\scripts\run_auto_collection.ps1
+```
+
+매일 오전 3시에 실행되는 Windows 예약 작업을 등록합니다.
+
+```powershell
+.\scripts\register_auto_collection_task.ps1 -Frequency Daily -At "03:00"
+```
+
+세부 옵션과 권장 데이터는 [사용 가이드](docs/user-guide.md)와
+[자동 수집 권장 데이터](docs/recommended-data.md)를 확인하세요.
+
 ## 구현 범위
 
 - 다크 내비게이션 기반 상단 메뉴: 기회 탐색 / 핵심 신호 / 분석 방법

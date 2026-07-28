@@ -169,4 +169,10 @@ def initialize(conn: sqlite3.Connection) -> None:
     backfill_record_sectors(conn)
     from .analytics import ensure_analytics
     ensure_analytics(conn)
+    from .statistical_signals import ensure_signal_schema
+    ensure_signal_schema(conn)
+    from .opportunity_models import ensure_opportunity_model_schema
+    ensure_opportunity_model_schema(conn)
+    from .donor_supply import ensure_donor_supply_schema
+    ensure_donor_supply_schema(conn)
     conn.commit()

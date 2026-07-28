@@ -43,8 +43,8 @@ class KoicaRateLimitTest(unittest.TestCase):
             collector.collect(years=[2026], project_types=["0102"], page_size=100)
             conn.close()
 
-        self.assertEqual(starts, [0.0, 3.0, 6.0])
-        self.assertEqual(delays, [3.0, 3.0])
+        self.assertEqual(starts, [0.0, 3.0, 6.0, 9.0])
+        self.assertEqual(delays, [3.0, 3.0, 3.0])
 
 
 if __name__ == "__main__":

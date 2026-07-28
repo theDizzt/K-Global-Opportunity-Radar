@@ -1,0 +1,95 @@
+{
+  "as_of_date": "2026-07-28",
+  "method": "Official source documents were manually checked for country, date, sector and concrete Tier A/B action. Supporting text is a short analytical paraphrase, not a verbatim copy.",
+  "records": [
+    {
+      "external_id": "MOFA-POLICY-2026-VNM-DIGITAL-MOU",
+      "source_type": "MOFA",
+      "country_iso3": "VNM",
+      "title": "한-베트남 과학기술혁신 프레임워크 및 디지털 협력 MOU",
+      "event_date": "2026-04-22",
+      "event_type": "mou",
+      "sectors": [
+        "digital"
+      ],
+      "organizations": [
+        "대한민국 외교부",
+        "대한민국 과학기술정보통신부",
+        "베트남 과학기술부",
+        "KOICA",
+        "VKIST",
+        "KIST"
+      ],
+      "supporting_text": "한국과 베트남은 과학기술혁신 협력 마스터플랜 프레임워크를 체결했다. 양국 과학기술 부처는 인공지능, 차세대통신, ICT 제도와 디지털 전환의 공동연구·인력양성을 포함한 디지털 협력 MOU도 체결했으며, KOICA의 VKIST 후속 지원사업과 현지 실무협의체 추진계획을 함께 제시했다.",
+      "source_url": "https://www.mofa.go.kr/www/brd/m_24815/view.do?page=1&pitem=10&seq=150",
+      "confidence": 1.0
+    },
+    {
+      "external_id": "MOFA-POLICY-2026-IDN-JOINT-STATEMENT-MOU",
+      "source_type": "MOFA",
+      "country_iso3": "IDN",
+      "title": "2026 한-인도네시아 특별 포괄적 전략 동반자 관계 공동성명",
+      "event_date": "2026-04-01",
+      "event_type": "mou",
+      "sectors": [
+        "digital",
+        "health",
+        "climate_environment"
+      ],
+      "organizations": [
+        "대한민국 정부",
+        "인도네시아 정부",
+        "대한민국 외교부",
+        "인도네시아 국가개발계획부",
+        "대한민국 보건복지부",
+        "인도네시아 인적개발문화조정부",
+        "대한민국 과학기술정보통신부",
+        "인도네시아 통신디지털부"
+      ],
+      "supporting_text": "한-인도네시아 정상 공동성명은 AI 기반 일차의료·인적개발 협력 MOU와 디지털 개발 협력 MOU 체결을 확인했다. 외교부와 인도네시아 국가개발계획부 간 개발협력 MOU는 기술·디지털화·혁신뿐 아니라 보건과 기후회복 분야 협력을 명시했다.",
+      "source_url": "https://www.mofa.go.kr/www/brd/m_29514/view.do?page=3&seq=36",
+      "confidence": 1.0
+    },
+    {
+      "external_id": "MOFA-POLICY-2025-IDN-ODA-CONSULTATION",
+      "source_type": "MOFA",
+      "country_iso3": "IDN",
+      "title": "제6차 한-인도네시아 ODA 통합정책협의회",
+      "event_date": "2025-12-17",
+      "event_type": "working_group",
+      "sectors": [
+        "vocational",
+        "agriculture",
+        "health"
+      ],
+      "organizations": [
+        "대한민국 외교부",
+        "대한민국 기획재정부",
+        "주인도네시아대한민국대사관",
+        "인도네시아 국가개발계획부"
+      ],
+      "supporting_text": "양국 정부는 진행 중인 ODA 사업과 향후 후보사업을 점검하고, 주인도네시아대사관과 BAPPENAS 간 정례협의체 신설에 합의했다. 향후 전략 분야로 인재양성, 농업, 보건을 명시했다.",
+      "source_url": "https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=376793",
+      "confidence": 1.0
+    },
+    {
+      "external_id": "MOFA-POLICY-2025-MNG-JOINT-COMMITTEE",
+      "source_type": "MOFA",
+      "country_iso3": "MNG",
+      "title": "제9차 한-몽골 공동위원회 및 희소금속 협력센터 후속조치",
+      "event_date": "2025-11-19",
+      "event_type": "working_group",
+      "sectors": [
+        "climate_environment"
+      ],
+      "organizations": [
+        "대한민국 외교부",
+        "몽골 내각사무처",
+        "한몽 희소금속 협력센터"
+      ],
+      "supporting_text": "한-몽골 공동위원회는 희소금속과 광물가공 기술 협력의 구체화를 협의하고, 2025년 말 예정된 한몽 희소금속 협력센터 개소와 후속조치를 관계부처·유관기관이 체계적으로 추진하기로 했다.",
+      "source_url": "https://www.mofa.go.kr/www/brd/m_4080/view.do?seq=376671",
+      "confidence": 1.0
+    }
+  ]
+}

@@ -7,10 +7,11 @@ import os
 from datetime import date
 from pathlib import Path
 
-from opportunity_radar.config import load_env, require_setting
+from opportunity_radar.config import load_env
 from opportunity_radar.db import connect, initialize
 from opportunity_radar.koica_pipeline import PROJECT_TYPES
 from opportunity_radar.resilient_koica import ResilientKoicaCollector
+from opportunity_radar.settings import public_data_service_key
 
 
 # 1. 루트 환경설정과 실제 데이터베이스 기본 경로 정의
@@ -33,8 +34,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help="특정 KOICA 사업유형만 수집할 때 여러 번 지정할 수 있습니다.",
     )
-    parser.add_argument("--min-request-interval", type=float, default=3.0)
+    parser.add_argument("--min-request-interval", type=float, default=5.0)
     parser.add_argument("--max-retries", type=int, default=3)
+    parser.add_argument(
+        "--list-only",
+        action="store_true",
+        help="불안정한 상세 API를 호출하지 않고 목록 수준의 사업만 저장합니다.",
+    )
     return parser
 
 
@@ -55,7 +61,7 @@ def main() -> None:
     try:
         collector = ResilientKoicaCollector(
             connection,
-            require_setting("KOICA_SERVICE_KEY"),
+            public_data_service_key(),
             min_request_interval=args.min_request_interval,
             max_retries=args.max_retries,
         )
@@ -67,6 +73,7 @@ def main() -> None:
                 if args.project_type
                 else PROJECT_TYPES
             ),
+            fetch_details=not args.list_only,
         )
     finally:
         connection.close()

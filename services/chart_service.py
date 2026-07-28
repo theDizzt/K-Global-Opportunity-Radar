@@ -63,7 +63,7 @@ def make_compare_chart(compare_data, dark_mode=False):
             text=compare_data["score"].map(lambda value: f"{value:.1f}"),
             textposition="outside",
             textfont=dict(
-                family="Cafe24ProSlim, Pretendard, sans-serif",
+                family="Pretendard, sans-serif",
                 size=17,
                 color=text_color,
             ),
