@@ -11,18 +11,21 @@ from .ingest import _coverage, _source_record
 from .public_api import DataGoKrClient, IngestionRun
 
 
+# 1. 국가 관계·경제·여행경보 공식 API 주소
 MOFA_ENDPOINTS = {
     "relation": "https://apis.data.go.kr/1262000/OverviewKorRelationService/getOverviewKorRelationList",
     "economy": "https://apis.data.go.kr/1262000/OverviewEconomicService/OverviewEconomicList",
     "warning": "https://apis.data.go.kr/1262000/TravelWarningServiceV3/getTravelWarningListV3",
 }
 
+# 2. 화면과 보고서에 연결할 공공데이터포털 원문 페이지
 MOFA_SOURCE_URLS = {
     "relation": "https://www.data.go.kr/data/15099539/openapi.do",
     "economy": "https://www.data.go.kr/data/15099538/openapi.do",
     "warning": "https://www.data.go.kr/data/15000827/openapi.do",
 }
 
+# 3. 국가별 관계·경제 프로필을 저장하는 확장 스키마
 MOFA_SCHEMA = """
 CREATE TABLE IF NOT EXISTS country_profile (
     country_iso3 TEXT NOT NULL REFERENCES country(iso3),
@@ -43,6 +46,7 @@ CREATE TABLE IF NOT EXISTS country_profile (
 """
 
 
+# 4. 쉼표가 포함된 수치 문자열을 분석 가능한 실수로 변환
 def _number(value: object) -> float | None:
     try:
         return float(str(value).replace(",", "").strip()) if value not in {None, ""} else None
@@ -50,6 +54,7 @@ def _number(value: object) -> float | None:
         return None
 
 
+# 5. 여행경보 응답 필드를 0~4 단계로 표준화
 def _warning_level(item: dict) -> int:
     if item.get("ban_yna") or item.get("ban_yn_partial"):
         return 4
@@ -62,6 +67,7 @@ def _warning_level(item: dict) -> int:
     return 0
 
 
+# 6. MOFA REST 자료를 국가 프로필·위험·근거 테이블로 적재
 class MofaCollector:
     def __init__(self, conn: sqlite3.Connection, service_key: str, **client_options):
         self.conn = conn
@@ -70,6 +76,7 @@ class MofaCollector:
         conn.commit()
 
     def _store_profile(self, iso3: str, profile_type: str, item: dict) -> None:
+        # 최신 프로필은 국가×유형별 한 건으로 유지하되 원본 JSON을 함께 보존합니다.
         observed_at = date.today().isoformat()
         self.conn.execute(
             """INSERT INTO country_profile(
@@ -117,6 +124,7 @@ class MofaCollector:
                 )
 
     def _store_warning(self, iso3: str, item: dict) -> None:
+        # 전체·부분 여행경보 문자열을 보존하고 계산에는 표준 경보 단계를 사용합니다.
         level = _warning_level(item)
         labels = [
             str(item.get(key)) for key in ("attention", "limita", "control", "ban_yna") if item.get(key)
@@ -137,6 +145,7 @@ class MofaCollector:
         )
 
     def collect(self, *, page_size: int = 200, max_pages: int | None = None) -> dict[str, int]:
+        # 관계·경제 API는 국가별로, 여행경보 API는 전체 목록을 한 번 조회합니다.
         upsert_target_countries(self.conn)
         run = IngestionRun(self.conn, "MOFA", {"countries": list(TARGET_COUNTRIES), "page_size": page_size})
         counts = {iso3: 0 for iso3 in TARGET_COUNTRIES}

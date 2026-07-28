@@ -8,6 +8,7 @@ from pathlib import Path
 
 from opportunity_radar.db import connect, initialize
 from opportunity_radar.kf_pipeline import KfCollector
+from opportunity_radar.kf_eschool import KfESchoolCollector
 from opportunity_radar.mofa_lod import MofaLodCollector
 from opportunity_radar.mofa_pipeline import MofaCollector
 
@@ -60,6 +61,52 @@ class PublicCollectorsTest(unittest.TestCase):
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM kf_partner_org").fetchone()[0], 3)
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM evidence WHERE sector_code='education'").fetchone()[0], 6)
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM raw_api_response WHERE source_type='KF'").fetchone()[0], 9)
+
+    def test_kf_eschool_collects_target_country_courses(self):
+        html = """
+        <html><body><table class="list">
+          <tbody id="globalEschoolList">
+            <tr>
+              <td>2024</td><td>국내-해외 연계형</td><td>서울대학교</td>
+              <td>한국학</td><td>한국경제</td><td>가을</td>
+              <td>베트남</td><td>하노이대학교</td><td>59</td>
+            </tr>
+            <tr>
+              <td>2024</td><td>VOD</td><td>한국외국어대학교</td>
+              <td>한국어</td><td>한국어 1</td><td>봄</td>
+              <td>인도네시아</td><td>인도네시아대학교</td><td>31</td>
+            </tr>
+            <tr>
+              <td>2024</td><td>실시간</td><td>서울대학교</td>
+              <td>한국학</td><td>한국사회</td><td>겨울</td>
+              <td>독일</td><td>튀빙겐대학교</td><td>20</td>
+            </tr>
+          </tbody>
+        </table></body></html>
+        """.encode("utf-8")
+
+        counts = KfESchoolCollector(
+            self.conn,
+            transport=lambda _url: html,
+        ).collect()
+
+        self.assertEqual(counts, {"VNM": 1, "IDN": 1, "MNG": 0})
+        self.assertEqual(
+            self.conn.execute("SELECT COUNT(*) FROM kf_eschool_course").fetchone()[0],
+            2,
+        )
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT COUNT(*) FROM evidence WHERE sector_code='korean_studies'"
+            ).fetchone()[0],
+            2,
+        )
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT COUNT(*) FROM raw_api_response WHERE source_type='KF_ESCHOOL'"
+            ).fetchone()[0],
+            1,
+        )
 
     def test_mofa_collects_profiles_and_travel_warning(self):
         def transport(url: str) -> bytes:

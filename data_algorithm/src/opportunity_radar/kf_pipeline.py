@@ -11,18 +11,21 @@ from .ingest import _coverage, _source_record
 from .public_api import DataGoKrClient, IngestionRun
 
 
+# 1. KF 공공외교 사업·기관·실적 공식 API 주소
 KF_ENDPOINTS = {
     "business": "https://apis.data.go.kr/B260004/PublicDiplomacyBusinessInfoService/getPublicDiplomacyBusinessInfoList",
     "organization": "https://apis.data.go.kr/B260004/PublicDiplomacyOrgService/getPublicDiplomacyOrgList",
     "results": "https://apis.data.go.kr/B260004/PublicDiplomacyBusinessResultsService/getPublicDiplomacyBusinessResultsList",
 }
 
+# 2. 화면과 보고서에 연결할 공공데이터포털 원문 페이지
 KF_SOURCE_URLS = {
     "business": "https://www.data.go.kr/data/15099202/openapi.do",
     "organization": "https://www.data.go.kr/data/15099204/openapi.do",
     "results": "https://www.data.go.kr/data/15112896/openapi.do",
 }
 
+# 3. 국가별 KF 협력기관을 저장하는 확장 스키마
 KF_SCHEMA = """
 CREATE TABLE IF NOT EXISTS kf_partner_org (
     external_id TEXT PRIMARY KEY,
@@ -36,11 +39,13 @@ CREATE TABLE IF NOT EXISTS kf_partner_org (
 """
 
 
+# 4. 원본에 고정 ID가 없을 때 중복 방지용 안정 해시 생성
 def _stable_id(prefix: str, *values: object) -> str:
     raw = "|".join("" if value is None else str(value).strip() for value in values)
     return f"{prefix}-{hashlib.sha1(raw.encode('utf-8')).hexdigest()[:20]}"
 
 
+# 5. 연도 값만 제공되는 자료를 해당 연도 1월 1일로 표준화
 def _year_date(value: object) -> str | None:
     try:
         return f"{int(value):04d}-01-01"
@@ -48,6 +53,7 @@ def _year_date(value: object) -> str | None:
         return None
 
 
+# 6. KF API 자료를 원문·기관·분야 근거 테이블로 적재
 class KfCollector:
     def __init__(self, conn: sqlite3.Connection, service_key: str, **client_options):
         self.conn = conn
@@ -64,6 +70,7 @@ class KfCollector:
         event_type: str,
         organizations: list[str],
     ) -> bool:
+        # 사업명·목적·기관명을 함께 분류해 국가×분야 근거를 생성합니다.
         text = "\n".join(
             str(item.get(key) or "")
             for key in (
@@ -150,6 +157,7 @@ class KfCollector:
         )
 
     def collect(self, *, page_size: int = 1000, max_pages: int | None = None) -> dict[str, int]:
+        # 시범국 ISO2 조건으로 세 API를 순회하고 국가별 수집 건수를 기록합니다.
         upsert_target_countries(self.conn)
         run = IngestionRun(self.conn, "KF", {"countries": list(TARGET_COUNTRIES), "page_size": page_size})
         counts = {iso3: 0 for iso3 in TARGET_COUNTRIES}
