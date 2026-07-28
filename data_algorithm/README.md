@@ -11,6 +11,8 @@
 - KF 한국학·한류 기반 산출
 - 데이터 신뢰도, 안전 주의지표, 가중치 민감도
 - 출처만 사용하는 설명 컨텍스트와 선택적 LLM 호출
+- 텍스트 추론 Tier A/B 이중검수·Cohen's kappa와 검증된 공식 정책근거 적재
+- 수행이력·안전·경제·수집상태를 분리한 실행 가능성 게이트
 - API 키 없이 실행되는 3개국 데모 데이터
 
 > `data/demo_bundle.json`의 수치는 파이프라인 검증을 위한 합성 데이터이며 실제 통계가 아닙니다.
@@ -55,7 +57,16 @@ python -m unittest discover -s tests -v
 
 ### KOICA
 
-`opportunity_radar.ingest.KoicaApiClient`에 공공데이터포털 서비스키를 전달합니다. 반환 XML을 `project` 데이터 계약으로 매핑하는 단계는 API의 실제 응답 필드명을 확인한 뒤 추가해야 합니다.
+공공데이터포털의 `한국국제협력단_사업정보조회(15158394)`를 사용합니다. Base
+URL은 `https://apis.data.go.kr/B260003/BsnsService`이며, 디코딩 키를
+`KOICA_SERVICE_KEY`에 저장하면 됩니다. 실제 XML 목록 응답은 `project`와
+`source_record`에 매핑되며 원문도 `raw_api_response`에 보존됩니다.
+
+현재 상세조회 API는 정상 목록의 사업번호와 공식 가이드의 예제 사업번호 모두에
+`RESULT_CODE=99`를 반환합니다. 이때는 `scripts\collect_koica.py --list-only`로
+목록 수준 사업을 먼저 적재하고 상세 누락을 명시적으로 유지합니다. OECD CRS가 함께
+적재된 통계 DB에서는 동일 ODA 사업의 이중 집계를 막기 위해 OECD를 결과 라벨로
+사용하고 KOICA는 근거·메타데이터 보강 자료로 사용합니다.
 
 ### KF
 
@@ -79,9 +90,12 @@ LLM에는 이미 계산된 점수와 조회된 근거만 전달합니다. LLM은
 
 ## 다음 실데이터 작업
 
-1. 공공데이터포털 KOICA 서비스키 발급
-2. KOICA 응답 샘플 저장 및 필드 매핑
-3. KF 한국학·한류 원자료 다운로드
-4. ISO 국가코드와 분야 분류 사전 확정
-5. LOD SPARQL 쿼리와 MOFA 자료 이용 방식 확정
-6. 최소 10개국 이상을 정규화 기준 모집단으로 적재
+1. KOICA 상세조회 API `RESULT_CODE=99` 정상화 여부 재점검
+2. OECD CRS와 KOICA 사업의 교차출처 레코드 연결
+3. KF 한국학·한류 원자료 범위 확대
+4. LOD·MOFA 수집 국가를 검증 모집단 전체로 확대
+5. World Bank 136개 비교국의 다중지표 수요점수에 전문가 타당성 평가 연결
+6. 협력 연속성·미충족 수요·전체 공여국 포화도를 분리한 추천 화면 연결
+
+협력 기회 모델의 산식, 실제 적재 결과와 한계는
+[`docs/OPPORTUNITY_MODELS.md`](docs/OPPORTUNITY_MODELS.md)에 정리되어 있습니다.
