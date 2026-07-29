@@ -39,6 +39,7 @@ class DatabaseTestCase(unittest.TestCase):
                     "country_aliases",
                     "source_documents",
                     "document_countries",
+                    "ai_reports",
                 )
             }
 
@@ -54,6 +55,7 @@ class DatabaseTestCase(unittest.TestCase):
         self.assertEqual(counts["country_aliases"], 0)
         self.assertEqual(counts["source_documents"], 0)
         self.assertEqual(counts["document_countries"], 0)
+        self.assertEqual(counts["ai_reports"], 0)
 
     # 1.4. 데이터베이스 초기화를 반복해도 중복되지 않는지 검증
     def test_initialization_is_idempotent(self):

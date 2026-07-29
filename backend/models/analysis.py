@@ -64,6 +64,7 @@ class TrendPoint(ApiModel):
 
 # 7. 분석 근거와 원문 출처 모델
 class EvidenceItem(ApiModel):
+    evidence_id: str
     title: str
     category: str
     source: str

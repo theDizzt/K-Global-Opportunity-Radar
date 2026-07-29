@@ -41,20 +41,21 @@ LIVE_DATA_NOTICE = (
 
 
 # 3. 국가정보와 사용자 요청을 결합하여 전체 분석 응답 생성
-def build_analysis(country: CountryRecord, request: AnalysisRequest):
+def build_analysis(country: CountryRecord, request: AnalysisRequest, repository=None):
+    repository = repository or analysis_repository
     # 3.1. 실제 점수가 있으면 우선 사용하고 없을 때만 시범 산식으로 폴백
     persona = request.persona.value
     field = request.field.value
-    opportunity = analysis_repository.get_opportunity_score(country.iso3, field)
+    opportunity = repository.get_opportunity_score(country.iso3, field)
     if opportunity is None:
         score = calculate_score(country, persona, field)
         raw_metrics = get_analysis_metrics(country, field)
-        history = analysis_repository.get_signal_history(country.iso3)
+        history = repository.get_signal_history(country.iso3)
         country_summary = country.to_summary()
     else:
         score = calculate_opportunity_score(opportunity, persona)
         raw_metrics = get_opportunity_metrics(opportunity)
-        history = analysis_repository.get_opportunity_history(country.iso3, field)
+        history = repository.get_opportunity_history(country.iso3, field)
         country_summary = country.to_summary().model_copy(
             update={
                 "data_completeness": round(opportunity.data_confidence),
@@ -75,9 +76,10 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
         for (year, _), value in zip(history, trend_values, strict=True)
     ]
     # 3.3. 저장소의 근거와 주의 요인을 API 응답 모델로 변환
-    evidence_records = analysis_repository.get_evidence(country.iso3, field)
+    evidence_records = repository.get_evidence(country.iso3, field)
     evidence = [
         EvidenceItem(
+            evidence_id=item.evidence_id,
             title=item.title,
             category=item.category,
             source=item.source,
@@ -95,10 +97,10 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
             source=item.source,
             source_url=item.source_url,
         )
-        for item in analysis_repository.get_risks(country.iso3)
+        for item in repository.get_risks(country.iso3)
     ]
     # 3.4. 프로젝트와 추천 정보를 결합하여 최종 응답 반환
-    project = analysis_repository.get_project(country.iso3)
+    project = repository.get_project(country.iso3)
 
     return AnalysisResponse(
         country=country_summary,
@@ -115,7 +117,7 @@ def build_analysis(country: CountryRecord, request: AnalysisRequest):
         metrics=metrics,
         trend=trend,
         evidence=evidence,
-        recommendations=analysis_repository.get_recommendations(country.iso3),
+        recommendations=repository.get_recommendations(country.iso3),
         risks=risks,
         gap_opportunity=country.gap_opportunity,
         capabilities=request.capabilities,

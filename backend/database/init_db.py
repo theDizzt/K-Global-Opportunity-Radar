@@ -58,6 +58,7 @@ def _migrate_algorithm_tables(connection):
 # 3. 재설정 시 외래키 순서를 고려하여 기존 시범 데이터 삭제
 def _clear_seed_data(connection):
     for table in (
+        "ai_reports",
         "opportunity_scores",
         "document_countries",
         "source_documents",
