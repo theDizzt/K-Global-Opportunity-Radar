@@ -11,6 +11,7 @@ STYLE_PATH = ROOT_DIR / "styles" / "dashboard.css"
 # 2. 백엔드 API 연결과 SQLite 안전 모드 환경변수 설정
 API_BASE_URL = os.getenv("K_GLOBAL_API_URL", "http://127.0.0.1:8000/api/v1").rstrip("/")
 API_TIMEOUT = float(os.getenv("K_GLOBAL_API_TIMEOUT", "2.0"))
+REPORT_API_TIMEOUT = float(os.getenv("K_GLOBAL_REPORT_TIMEOUT", "120.0"))
 API_FALLBACK_ENABLED = os.getenv("K_GLOBAL_API_FALLBACK", "true").lower() in {
     "1",
     "true",

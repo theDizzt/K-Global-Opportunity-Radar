@@ -34,14 +34,25 @@ def load_analysis(country_iso3, persona, field, capabilities=()):
     return result.payload, result.transport
 
 
-# 4. 공공데이터 출처 목록 조회
+# 4. 선택 국가의 출처 기반 AI 초기 사업 검토안 생성
+def load_report(country_iso3, persona, field, capabilities=()):
+    result = radar_gateway.generate_report(
+        country_iso3,
+        persona,
+        field,
+        capabilities,
+    )
+    return result.payload, result.transport
+
+
+# 5. 공공데이터 출처 목록 조회
 @st.cache_data(ttl=60, show_spinner=False)
 def load_sources():
     result = radar_gateway.get_sources()
     return result.payload, result.transport
 
 
-# 5. 국가 표만 사용하는 기존 호출부를 위한 호환 함수
+# 6. 국가 표만 사용하는 기존 호출부를 위한 호환 함수
 def load_data():
     """국가 표만 필요한 기존 호출부에 국가 데이터를 반환합니다."""
     return load_countries()[0]

@@ -1,5 +1,9 @@
 # 0. 테스트 모듈 불러오기
+import os
 import unittest
+
+
+os.environ["OPENAI_REPORTS_ENABLED"] = "false"
 
 from frontend_services.api_client import RadarGateway
 
@@ -33,6 +37,21 @@ class FrontendGatewayTestCase(unittest.TestCase):
         self.assertEqual(result.payload["country"]["iso3"], "VNM")
         self.assertEqual(len(result.payload["metrics"]), 4)
         self.assertTrue(result.payload["interpretation"])
+
+    # 1.4. 보고서 API 장애 시 로컬 근거 기반 검토안으로 전환
+    def test_sqlite_fallback_report_matches_api_contract(self):
+        result = self.gateway.generate_report(
+            "VNM",
+            "대학생 팀",
+            "교육",
+            ["데이터 분석"],
+        )
+
+        self.assertEqual(result.transport, "sqlite_fallback")
+        self.assertIn(result.payload["status"], {"fallback", "cached"})
+        self.assertEqual(result.payload["generation_mode"], "rule_based")
+        self.assertTrue(result.payload["sources"])
+        self.assertTrue(result.payload["citations"])
 
 
 # 2. 파일을 직접 실행했을 때 테스트 시작
