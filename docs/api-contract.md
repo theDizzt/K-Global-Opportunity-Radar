@@ -121,9 +121,11 @@ CSV와 현재 시범 상수를 다시 적재하려면 `--reset`을 사용합니�
 ## 초기 사업 검토안 요청
 
 `POST /api/v1/reports`는 `/analysis`와 같은 입력을 받고, 선택 국가·분야에
-연결된 근거 문서가 있을 때만 초기 검토안을 반환합니다. 첫 버전은 생성형 AI를
-호출하지 않는 `rule_based` 모드이며, 동일한 요청과 근거 조합은 SQLite 캐시에서
-재사용합니다. 근거가 없으면 `status`가 `blocked`이고 임의 내용을 생성하지 않습니다.
+연결된 근거 문서가 있을 때만 초기 검토안을 반환합니다. `OPENAI_API_KEY`가 있으면
+Responses API의 Structured Outputs로 보고서를 생성하고, 모든 항목의 출처 ID가
+검색 결과 안에 있는지 다시 검증합니다. 키가 없거나 API·검증이 실패하면
+`rule_based` 검토안으로 전환합니다. 동일한 요청과 근거 조합은 SQLite 캐시에서
+재사용하며, 근거가 없으면 `status`가 `blocked`이고 임의 내용을 생성하지 않습니다.
 
 ```json
 {
@@ -140,4 +142,19 @@ CSV와 현재 시범 상수를 다시 적재하려면 `--reset`을 사용합니�
 - `generation_mode`: `rule_based`, `llm`, `none`
 - `request_hash`: 입력·점수·근거가 같을 때 동일한 캐시 식별자
 - `sources`: 검토안에 사용된 근거 ID, 기관명, 기준일, 원문 URL
+- `citations`: 보고서 항목별로 검증된 근거 ID 목록
+- `llm_model`: LLM 생성에 사용된 모델 (`rule_based`이면 `null`)
 - `additional_checks`: 공개자료만으로 확인할 수 없는 후속 검토사항
+
+OpenAI 호출은 `store=false`로 전송합니다. 일시적 네트워크 오류나 429/5xx 응답은
+한 번 재시도하며, 최종 실패 결과는 캐시하지 않아 다음 요청에서 다시 복구를
+시도합니다. 이미 성공한 LLM 결과가 있으면 네트워크 장애 시 저장된 결과를
+반환할 수 있습니다.
+
+실제 키의 연결과 Structured Outputs 지원 여부만 확인하려면 프로젝트 루트에서
+다음을 실행합니다. 이 스크립트는 키와 생성 본문을 출력하거나 프로젝트 DB에
+저장하지 않습니다.
+
+```powershell
+.\.venv\Scripts\python.exe .\scripts\smoke_openai_report.py
+```

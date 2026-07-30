@@ -3,6 +3,8 @@
 from datetime import date, datetime
 from typing import Literal
 
+from pydantic import Field
+
 from backend.models.analysis import AnalysisField, AnalysisRequest, DataStatus, Persona
 from backend.models.common import ApiModel
 from backend.models.country import CountrySummary
@@ -20,6 +22,30 @@ class ReportSource(ApiModel):
     reference_date: date
     source_url: str
     is_demo: bool
+
+
+class CitedText(ApiModel):
+    text: str = Field(min_length=1)
+    evidence_ids: list[str] = Field(min_length=1)
+
+
+class CitedList(ApiModel):
+    items: list[str] = Field(min_length=1)
+    evidence_ids: list[str] = Field(min_length=1)
+
+
+class GeneratedReportDraft(ApiModel):
+    """Structured Outputs로 강제하는 LLM 내부 응답 형식."""
+
+    project_title: CitedText
+    background: CitedText
+    local_demand: CitedText
+    korean_capabilities: CitedText
+    target_beneficiaries: CitedList
+    partner_types: CitedList
+    implementation_steps: CitedList
+    risks: CitedList
+    additional_checks: CitedList
 
 
 class ReportResponse(ApiModel):
@@ -43,3 +69,5 @@ class ReportResponse(ApiModel):
     sources: list[ReportSource]
     data_status: DataStatus
     notice: str
+    citations: dict[str, list[str]] = Field(default_factory=dict)
+    llm_model: str | None = None

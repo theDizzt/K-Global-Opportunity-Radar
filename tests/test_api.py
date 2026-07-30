@@ -1,7 +1,11 @@
 # 0. 테스트 모듈 불러오기
+import os
 import unittest
 
 from httpx import ASGITransport, AsyncClient
+
+# 테스트에서는 실제 OpenAI API를 호출하거나 비용을 발생시키지 않는다.
+os.environ["OPENAI_REPORTS_ENABLED"] = "false"
 
 from backend.main import app
 

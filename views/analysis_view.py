@@ -1,5 +1,6 @@
 # 0. 모듈 불러오기
 from html import escape
+import re
 
 import streamlit as st
 
@@ -9,7 +10,7 @@ from components.analysis_panels import (
     show_model_panel,
     show_warning_panel,
 )
-from services.data_service import load_analysis
+from services.data_service import load_analysis, load_report
 from services.pdf_service import make_report_pdf
 
 
@@ -20,6 +21,99 @@ CARD_METRICS = (
     ("korean_base", "한국 연계기반"),
     ("readiness", "실행 가능성"),
 )
+
+REPORT_SECTION_LABELS = {
+    "project_title": "사업명",
+    "background": "사업 배경",
+    "local_demand": "현지 수요",
+    "korean_capabilities": "한국 측 역량",
+    "target_beneficiaries": "대상자",
+    "partner_types": "협력기관 유형",
+    "implementation_steps": "추진 단계",
+    "risks": "위험요인",
+    "additional_checks": "추가 확인사항",
+}
+
+
+def parse_capabilities(value):
+    """쉼표·줄바꿈으로 입력한 역량을 중복 없는 최대 10개 항목으로 변환한다."""
+    items = [
+        item.strip()
+        for item in re.split(r"[,/\n]", value)
+        if item.strip()
+    ]
+    return tuple(dict.fromkeys(items))[:10]
+
+
+def show_ai_report_panel(report, transport):
+    """보고서 API 응답을 생성 상태·검토안·출처 순서로 표시한다."""
+    if report["status"] == "blocked":
+        st.warning(report["notice"])
+        return
+
+    mode_label = "OpenAI 생성" if report["generation_mode"] == "llm" else "규칙 기반 안전 모드"
+    if report["status"] == "cached":
+        st.info("같은 조건으로 저장된 검토안을 불러왔습니다.")
+    elif report["generation_mode"] == "rule_based":
+        st.warning("AI 연결 또는 검증 조건에 따라 규칙 기반 검토안을 표시합니다.")
+    else:
+        st.success("출처 ID 검증을 통과한 AI 초기 검토안입니다.")
+
+    st.caption(
+        f"생성 방식: {mode_label} · 전달 경로: {transport}"
+        + (f" · 모델: {report['llm_model']}" if report.get("llm_model") else "")
+    )
+    st.subheader(report["project_title"])
+
+    summary_tab, plan_tab, source_tab = st.tabs(
+        ["검토 요약", "추진·위험", f"근거 {len(report['sources'])}건"]
+    )
+    with summary_tab:
+        st.markdown("**사업 배경**")
+        st.write(report["background"])
+        st.markdown("**현지 수요**")
+        st.write(report["local_demand"])
+        st.markdown("**한국 측 활용 역량**")
+        st.write(report["korean_capabilities"])
+        st.markdown("**예상 대상자**")
+        for item in report["target_beneficiaries"]:
+            st.write(f"- {item}")
+        st.markdown("**협력기관 유형**")
+        for item in report["partner_types"]:
+            st.write(f"- {item}")
+
+    with plan_tab:
+        st.markdown("**추진 단계**")
+        for number, item in enumerate(report["implementation_steps"], 1):
+            st.write(f"{number}. {item}")
+        st.markdown("**위험요인**")
+        for item in report["risks"]:
+            st.write(f"- {item}")
+        st.markdown("**추가 확인사항**")
+        for item in report["additional_checks"]:
+            st.write(f"- {item}")
+
+    with source_tab:
+        for number, source in enumerate(report["sources"], 1):
+            source_column, link_column = st.columns([4, 1])
+            with source_column:
+                st.markdown(f"**{number}. {source['title']}**")
+                st.caption(
+                    f"{source['source']} · {source['category']} · {source['reference_date']}"
+                )
+            with link_column:
+                st.link_button(
+                    f"원문 {number}",
+                    source["source_url"],
+                    width="stretch",
+                )
+
+        with st.expander("항목별 출처 ID 확인"):
+            for section, evidence_ids in report.get("citations", {}).items():
+                label = REPORT_SECTION_LABELS.get(section, section)
+                st.write(f"**{label}**: {', '.join(evidence_ids)}")
+
+    st.caption(report["notice"])
 
 
 # 2. 선택한 국가의 근거·추천·PDF 기능을 상세 팝업으로 표시
@@ -48,6 +142,51 @@ def show_opportunity_dialog(analysis, field):
     with recommendation_column:
         show_model_panel(analysis["recommendations"])
         show_warning_panel(analysis["risks"])
+
+    st.divider()
+    st.markdown("### AI 초기 사업 검토안")
+    st.caption("보유 역량을 입력하면 현재 점수와 연결된 공공데이터 안에서만 검토안을 생성합니다.")
+    persona = analysis["analysis"]["persona"]
+    iso3 = country["iso3"]
+    capability_text = st.text_input(
+        "한국 측 보유 역량",
+        value=", ".join(analysis.get("capabilities", [])),
+        placeholder="예: 데이터 분석, 에듀테크, 교육 콘텐츠",
+        key=f"report_capabilities_{iso3}_{field}",
+    )
+    capabilities = parse_capabilities(capability_text)
+    report_state_key = f"ai_report_{iso3}_{persona}_{field}"
+
+    if st.button(
+        "출처 기반 AI 검토안 생성",
+        type="primary",
+        width="stretch",
+        key=f"generate_report_{iso3}_{field}",
+    ):
+        try:
+            with st.spinner("공공데이터 근거를 확인하고 검토안을 생성하는 중입니다..."):
+                report, transport = load_report(
+                    iso3,
+                    persona,
+                    field,
+                    capabilities,
+                )
+            st.session_state[report_state_key] = {
+                "report": report,
+                "transport": transport,
+                "capabilities": capabilities,
+            }
+        except Exception:
+            st.error("검토안 생성 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.")
+
+    saved_report = st.session_state.get(report_state_key)
+    if saved_report and saved_report["capabilities"] == capabilities:
+        show_ai_report_panel(
+            saved_report["report"],
+            saved_report["transport"],
+        )
+    elif saved_report:
+        st.info("보유 역량이 변경되었습니다. 검토안을 다시 생성해 주세요.")
 
     pdf_data = make_report_pdf(analysis)
     st.download_button(

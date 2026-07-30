@@ -11,9 +11,24 @@ from backend.repositories.analysis_repository import analysis_repository
 from backend.repositories.country_repository import CountryRecord
 from backend.repositories.report_repository import report_repository
 from backend.services.analysis_service import build_analysis
+from backend.services.openai_report_client import (
+    OpenAIReportError,
+    OpenAIReportGenerator,
+)
 
 
-PROMPT_VERSION = "report-rule-v1"
+PROMPT_VERSION = "report-rag-v2"
+REPORT_SECTION_NAMES = (
+    "project_title",
+    "background",
+    "local_demand",
+    "korean_capabilities",
+    "target_beneficiaries",
+    "partner_types",
+    "implementation_steps",
+    "risks",
+    "additional_checks",
+)
 
 
 def build_report(
@@ -22,25 +37,23 @@ def build_report(
     *,
     analysis_repo=None,
     report_repo=None,
+    report_generator=None,
 ):
     analysis_repo = analysis_repo or analysis_repository
     report_repo = report_repo or report_repository
+    generator = report_generator or OpenAIReportGenerator.from_environment()
     analysis_request = AnalysisRequest(**request.model_dump())
     analysis = build_analysis(country, analysis_request, repository=analysis_repo)
     request_hash = _build_request_hash(request, analysis)
 
     cached_payload = report_repo.get(request_hash)
-    if cached_payload is not None:
-        cached = ReportResponse.model_validate(cached_payload)
-        return cached.model_copy(
-            update={
-                "status": "cached",
-                "notice": (
-                    "동일한 조건과 근거로 저장된 검토안을 반환했습니다. "
-                    + cached.notice
-                ),
-            }
-        )
+    cached = (
+        ReportResponse.model_validate(cached_payload)
+        if cached_payload is not None
+        else None
+    )
+    if cached is not None and _can_reuse_cache(cached, generator):
+        return _as_cached(cached)
 
     sources = [
         ReportSource(**item.model_dump(mode="python"))
@@ -50,6 +63,131 @@ def build_report(
     if not sources:
         return _blocked_report(request, analysis, request_hash)
 
+    if generator.is_configured:
+        try:
+            draft = generator.generate(_build_llm_context(request, analysis, sources))
+            response = _build_llm_report(
+                request,
+                analysis,
+                sources,
+                draft,
+                request_hash,
+                generator.model,
+            )
+        except (OpenAIReportError, ValueError):
+            if cached is not None:
+                return _as_cached(
+                    cached,
+                    prefix="AI 연결 또는 출처 검증에 실패해 ",
+                )
+            return _build_rule_based_report(
+                request,
+                analysis,
+                sources,
+                request_hash,
+                api_failed=True,
+            )
+        report_repo.save(request, response)
+        return response
+
+    response = _build_rule_based_report(
+        request,
+        analysis,
+        sources,
+        request_hash,
+    )
+    report_repo.save(request, response)
+    return response
+
+
+def _build_llm_context(request, analysis, sources):
+    """LLM에 일반 지식 대신 검색·계산된 자료만 전달한다."""
+    return {
+        "request": request.model_dump(mode="json"),
+        "analysis": {
+            "country": analysis.country.model_dump(mode="json"),
+            "score": analysis.analysis.model_dump(mode="json"),
+            "metrics": [item.model_dump(mode="json") for item in analysis.metrics],
+            "trend": [item.model_dump(mode="json") for item in analysis.trend],
+            "risks": [item.model_dump(mode="json") for item in analysis.risks],
+            "data_status": analysis.data_status.model_dump(mode="json"),
+        },
+        "evidence": [source.model_dump(mode="json") for source in sources],
+    }
+
+
+def _build_llm_report(
+    request,
+    analysis,
+    sources,
+    draft,
+    request_hash,
+    model_name,
+):
+    allowed_ids = {source.evidence_id for source in sources}
+    citations = {}
+    for name in REPORT_SECTION_NAMES:
+        section = getattr(draft, name)
+        citations[name] = _validate_evidence_ids(section.evidence_ids, allowed_ids)
+
+    cited_ids = {
+        evidence_id
+        for section_ids in citations.values()
+        for evidence_id in section_ids
+    }
+    cited_sources = [
+        source for source in sources if source.evidence_id in cited_ids
+    ]
+    if not cited_sources:
+        raise ValueError("The generated report cited no retrieved evidence")
+
+    return ReportResponse(
+        status="generated",
+        generation_mode="llm",
+        request_hash=request_hash,
+        prompt_version=PROMPT_VERSION,
+        generated_at=datetime.now(timezone.utc),
+        country=analysis.country,
+        persona=request.persona,
+        field=request.field,
+        project_title=draft.project_title.text,
+        background=draft.background.text,
+        local_demand=draft.local_demand.text,
+        korean_capabilities=draft.korean_capabilities.text,
+        target_beneficiaries=draft.target_beneficiaries.items,
+        partner_types=draft.partner_types.items,
+        implementation_steps=draft.implementation_steps.items,
+        risks=draft.risks.items,
+        additional_checks=draft.additional_checks.items,
+        sources=cited_sources,
+        data_status=analysis.data_status,
+        notice=(
+            "검색된 공공데이터와 계산 결과만 전달해 생성한 초기 검토안입니다. "
+            "각 항목의 citations와 연결된 원문을 확인한 뒤 활용해야 합니다."
+        ),
+        citations=citations,
+        llm_model=model_name,
+    )
+
+
+def _validate_evidence_ids(evidence_ids, allowed_ids):
+    unique_ids = list(dict.fromkeys(evidence_ids))
+    if not unique_ids:
+        raise ValueError("Every generated section must cite evidence")
+    unknown_ids = set(unique_ids) - allowed_ids
+    if unknown_ids:
+        raise ValueError("Generated report cited evidence outside the retrieved context")
+    return unique_ids
+
+
+def _build_rule_based_report(
+    request,
+    analysis,
+    sources,
+    request_hash,
+    *,
+    api_failed=False,
+):
     capabilities = [item.strip() for item in request.capabilities if item.strip()]
     partner_types = [
         item.strip()
@@ -60,8 +198,13 @@ def build_report(
     risks = [item.title for item in analysis.risks]
     if not risks:
         risks = ["공개된 위험요인이 충분한지 추가 확인이 필요합니다."]
+    source_ids = [source.evidence_id for source in sources[:3]]
+    citations = {name: list(source_ids) for name in REPORT_SECTION_NAMES}
+    failure_notice = (
+        "OpenAI 연결 또는 응답 검증에 실패하여 " if api_failed else ""
+    )
 
-    response = ReportResponse(
+    return ReportResponse(
         status="fallback",
         generation_mode="rule_based",
         request_hash=request_hash,
@@ -101,12 +244,32 @@ def build_report(
         sources=sources,
         data_status=analysis.data_status,
         notice=(
-            "생성형 AI를 아직 호출하지 않은 규칙 기반 초기 검토안입니다. "
-            "시범 콘텐츠가 포함될 수 있으므로 원문과 최신 현지 정보를 다시 확인해야 합니다."
+            failure_notice
+            + "규칙 기반 초기 검토안을 반환했습니다. 시범 콘텐츠가 포함될 수 있으므로 "
+            "원문과 최신 현지 정보를 다시 확인해야 합니다."
         ),
+        citations=citations,
+        llm_model=None,
     )
-    report_repo.save(request, response)
-    return response
+
+
+def _can_reuse_cache(cached, generator):
+    if cached.generation_mode == "llm":
+        return not generator.is_configured or cached.llm_model == generator.model
+    return not generator.is_configured
+
+
+def _as_cached(cached, prefix=""):
+    return cached.model_copy(
+        update={
+            "status": "cached",
+            "notice": (
+                prefix
+                + "동일한 조건과 근거로 저장된 검토안을 반환했습니다. "
+                + cached.notice
+            ),
+        }
+    )
 
 
 def _build_request_hash(request, analysis):
@@ -147,4 +310,6 @@ def _blocked_report(request, analysis, request_hash):
         sources=[],
         data_status=analysis.data_status,
         notice=message,
+        citations={},
+        llm_model=None,
     )
